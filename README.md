@@ -1,4 +1,8 @@
 <p align="center">
+  <video src="docs/bansh.mp4" autoplay loop muted playsinline controls width="720" aria-label="Bansh demonstration video"></video>
+</p>
+
+<p align="center">
   <a href="https://www.flaticon.com/free-icon/dumpling_9361828?term=dumpling&page=1&position=29&origin=tag&related_id=9361828">
     <img src="https://cdn-icons-png.flaticon.com/512/9361/9361828.png" alt="Bansh dumpling icon" width="96" height="96">
   </a>
@@ -6,14 +10,14 @@
 
 # Bansh (Банш)
 
-Bansh is a native macOS input method for Mongolian Cyrillic transliteration.
+> bansh (банш) = dumpling
 
-The codebase keeps the transliteration engine in portable C++ and the macOS `InputMethodKit` layer thin, so text behavior is deterministic and covered by tests.
+Bansh (банш) is a native macOS input method for Mongolian Cyrillic transliteration.
 
 ## Install
 
 Download the latest release:
-[Bansh-0.1.0-direct-download.zip](https://github.com/anand-ts/bansh/releases/latest/download/Bansh-0.1.0-direct-download.zip)
+[Bansh-0.1.1-direct-download.zip](https://github.com/anand-ts/bansh/releases/latest/download/Bansh-0.1.1-direct-download.zip)
 
 1. Extract the zip.
 2. Double-click `Install Bansh.command`.

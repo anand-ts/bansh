@@ -19,6 +19,11 @@
 		A10000000000000000000037 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A10000000000000000000032 /* XCTest.framework */; };
 		A10000000000000000000049 /* BanshInputMethodIcon.tiff in Resources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000045 /* BanshInputMethodIcon.tiff */; };
 		A1000000000000000000004C /* InfoPlist.loctable in Resources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000004B /* InfoPlist.loctable */; };
+		A10000000000000000000050 /* BanshInputControllerTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000052 /* BanshInputControllerTests.mm */; };
+		A10000000000000000000051 /* BanshInputController.mm in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000011 /* BanshInputController.mm */; };
+		A10000000000000000000053 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A1000000000000000000001A /* Cocoa.framework */; };
+		A10000000000000000000054 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A1000000000000000000001C /* Carbon.framework */; };
+		A10000000000000000000055 /* InputMethodKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A1000000000000000000001E /* InputMethodKit.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -48,6 +53,7 @@
 		A10000000000000000000045 /* BanshInputMethodIcon.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = BanshInputMethodIcon.tiff; sourceTree = "<group>"; };
 		A1000000000000000000004A /* debug-input-source.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "debug-input-source.sh"; sourceTree = "<group>"; };
 		A1000000000000000000004B /* InfoPlist.loctable */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = InfoPlist.loctable; sourceTree = "<group>"; };
+		A10000000000000000000052 /* BanshInputControllerTests.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = BanshInputControllerTests.mm; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -66,6 +72,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				A10000000000000000000037 /* XCTest.framework in Frameworks */,
+				A10000000000000000000053 /* Cocoa.framework in Frameworks */,
+				A10000000000000000000054 /* Carbon.framework in Frameworks */,
+				A10000000000000000000055 /* InputMethodKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -164,6 +173,7 @@
 			children = (
 				A1000000000000000000002B /* TransliterationSessionTests.cpp */,
 				A10000000000000000000031 /* BanshCoreTests.mm */,
+				A10000000000000000000052 /* BanshInputControllerTests.mm */,
 			);
 			path = CoreTests;
 			sourceTree = "<group>";
@@ -280,7 +290,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				A10000000000000000000036 /* TransliterationSession.cpp in Sources */,
+				A10000000000000000000051 /* BanshInputController.mm in Sources */,
 				A10000000000000000000035 /* BanshCoreTests.mm in Sources */,
+				A10000000000000000000050 /* BanshInputControllerTests.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -324,7 +336,7 @@
 				INFOPLIST_FILE = Sources/InputMethod/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited)";
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 0.1.0;
+				MARKETING_VERSION = 0.1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.bansh.inputmethod.bansh;
 				PRODUCT_NAME = BanshInputMethod;
 				SDKROOT = macosx;
@@ -350,7 +362,7 @@
 				INFOPLIST_FILE = Sources/InputMethod/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited)";
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 0.1.0;
+				MARKETING_VERSION = 0.1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.bansh.inputmethod.bansh;
 				PRODUCT_NAME = BanshInputMethod;
 				SDKROOT = macosx;
@@ -372,14 +384,17 @@
 				ENABLE_HARDENED_RUNTIME = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
-				HEADER_SEARCH_PATHS = "$(SRCROOT)/Sources/Core";
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/Sources/Core",
+					"$(SRCROOT)/Sources/InputMethod",
+				);
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 0.1.0;
+				MARKETING_VERSION = 0.1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.bansh.inputmethod.coretests;
 				PRODUCT_NAME = BanshCoreTests;
 				SDKROOT = macosx;
@@ -402,14 +417,17 @@
 				ENABLE_HARDENED_RUNTIME = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
-				HEADER_SEARCH_PATHS = "$(SRCROOT)/Sources/Core";
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/Sources/Core",
+					"$(SRCROOT)/Sources/InputMethod",
+				);
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 0.1.0;
+				MARKETING_VERSION = 0.1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.bansh.inputmethod.coretests;
 				PRODUCT_NAME = BanshCoreTests;
 				SDKROOT = macosx;

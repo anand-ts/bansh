@@ -34,6 +34,7 @@ NSUInteger disallowedModifierFlags()
 
 - (void)applySnapshot:(const Snapshot&)snapshot client:(id<IMKTextInput, NSObject>)client;
 - (BOOL)commitCompositionAndInsertText:(NSString*)text client:(id<IMKTextInput, NSObject>)client;
+- (NSRange)committedTextReplacementRangeForClient:(id<IMKTextInput, NSObject>)client;
 - (void)clearMarkedTextForClient:(id<IMKTextInput, NSObject>)client;
 - (void)updateCompositionForClient:(id<IMKTextInput, NSObject>)client snapshot:(const Snapshot&)snapshot;
 
@@ -222,12 +223,13 @@ NSUInteger disallowedModifierFlags()
     const NSRange markedRange = [client markedRange];
     if (markedRange.location != NSNotFound) {
         [client insertText:@"" replacementRange:markedRange];
-        return;
     }
+}
 
-    [client setMarkedText:@""
-            selectionRange:NSMakeRange(0, 0)
-          replacementRange:NSMakeRange(NSNotFound, NSNotFound)];
+- (NSRange)committedTextReplacementRangeForClient:(id<IMKTextInput, NSObject>)client
+{
+    const NSRange markedRange = [client markedRange];
+    return markedRange.location != NSNotFound ? markedRange : NSMakeRange(NSNotFound, NSNotFound);
 }
 
 - (void)updateCompositionForClient:(id<IMKTextInput, NSObject>)client snapshot:(const Snapshot&)snapshot
@@ -250,14 +252,15 @@ NSUInteger disallowedModifierFlags()
 
 - (void)applySnapshot:(const Snapshot&)snapshot client:(id<IMKTextInput, NSObject>)client
 {
-    if (!snapshot.committedText.empty()) {
+    const BOOL insertedCommittedText = !snapshot.committedText.empty();
+    if (insertedCommittedText) {
         [client insertText:NSStringFromEngineString(snapshot.committedText)
-           replacementRange:NSMakeRange(NSNotFound, NSNotFound)];
+           replacementRange:[self committedTextReplacementRangeForClient:client]];
     }
 
     if (snapshot.isComposing) {
         [self updateCompositionForClient:client snapshot:snapshot];
-    } else {
+    } else if (!insertedCommittedText) {
         [self clearMarkedTextForClient:client];
     }
 }

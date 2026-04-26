@@ -10,7 +10,7 @@ settings:
     CLANG_ENABLE_OBJC_ARC: YES
     CURRENT_PROJECT_VERSION: "1"
     MACOSX_DEPLOYMENT_TARGET: "13.0"
-    MARKETING_VERSION: "0.1.0"
+    MARKETING_VERSION: "0.1.1"
     PRODUCT_BUNDLE_IDENTIFIER: com.bansh.inputmethod.bansh
     PRODUCT_NAME: BanshInputMethod
     SDKROOT: macosx
@@ -40,15 +40,20 @@ targets:
       - path: Sources/Core
         includes:
           - TransliterationSession.cpp
+      - path: Sources/InputMethod
+        includes:
+          - BanshInputController.mm
       - path: Tests/CoreTests
         includes:
           - BanshCoreTests.mm
+          - BanshInputControllerTests.mm
     settings:
       base:
         CODE_SIGN_STYLE: Automatic
         GENERATE_INFOPLIST_FILE: YES
         HEADER_SEARCH_PATHS:
           - $(SRCROOT)/Sources/Core
+          - $(SRCROOT)/Sources/InputMethod
         LD_RUNPATH_SEARCH_PATHS:
           - $(inherited)
           - @executable_path/../Frameworks
@@ -57,3 +62,6 @@ targets:
         PRODUCT_NAME: BanshCoreTests
     dependencies:
       - framework: XCTest.framework
+      - framework: Cocoa.framework
+      - framework: Carbon.framework
+      - framework: InputMethodKit.framework
