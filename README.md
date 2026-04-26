@@ -9,7 +9,7 @@
 > bansh (банш) = dumpling
 
 <p align="center">
-  <video src="docs/bansh.mp4" autoplay loop muted playsinline controls width="720" aria-label="Bansh demonstration video"></video>
+  <img src="docs/bansh.gif" alt="Bansh demonstration" width="720">
 </p>
 
 Bansh (банш) is a native macOS input method for Mongolian Cyrillic transliteration.
