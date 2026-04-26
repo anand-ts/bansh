@@ -1,8 +1,4 @@
 <p align="center">
-  <video src="docs/bansh.mp4" autoplay loop muted playsinline controls width="720" aria-label="Bansh demonstration video"></video>
-</p>
-
-<p align="center">
   <a href="https://www.flaticon.com/free-icon/dumpling_9361828?term=dumpling&page=1&position=29&origin=tag&related_id=9361828">
     <img src="https://cdn-icons-png.flaticon.com/512/9361/9361828.png" alt="Bansh dumpling icon" width="96" height="96">
   </a>
@@ -11,6 +7,10 @@
 # Bansh (Банш)
 
 > bansh (банш) = dumpling
+
+<p align="center">
+  <video src="docs/bansh.mp4" autoplay loop muted playsinline controls width="720" aria-label="Bansh demonstration video"></video>
+</p>
 
 Bansh (банш) is a native macOS input method for Mongolian Cyrillic transliteration.
 
@@ -52,14 +52,8 @@ To uninstall Bansh, double-click `Uninstall Bansh.command` from the extracted fo
 - `./scripts/uninstall-dev-input-method.sh`: remove the local development install
 - `./scripts/package-direct-download.sh`: build the direct-download zip
 
-## Signing
-
-The checked-in project does not include a personal Apple development team ID. Local install and packaging scripts use `BANSH_DEVELOPMENT_TEAM` or `DEVELOPMENT_TEAM` when provided, otherwise they infer a team from the Apple Development certificate available on the current Mac. Build outputs stay under `build/`.
-
 ## License
 
 Bansh is licensed under the Apache License 2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE).
-
-The README dumpling icon links to [Flaticon icon 9361828](https://www.flaticon.com/free-icon/dumpling_9361828?term=dumpling&page=1&position=29&origin=tag&related_id=9361828).
 
 > Project inspired by [Buuz](https://github.com/odbayar/buuz) on Windows :)
