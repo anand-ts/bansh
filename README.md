@@ -12,7 +12,8 @@
   <img src="docs/bansh.gif" alt="Bansh demonstration" width="720">
 </p>
 
-Bansh (банш) is a native macOS input method for Mongolian Cyrillic transliteration.
+Bansh (банш) is a native macOS input method (input source) that transliterates Latin-keyboard input into Mongolian Cyrillic.
+For example, if you type `bansh id'ye`, it appears as `банш идье`.
 
 ## Install
 
