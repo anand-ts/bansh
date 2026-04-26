@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>en</key>
+    <dict>
+        <key>CFBundleDisplayName</key>
+        <string>Bansh</string>
+        <key>CFBundleName</key>
+        <string>Bansh</string>
+        <key>com.bansh.inputmethod</key>
+        <string>Bansh</string>
+        <key>com.bansh.inputmethod.standard</key>
+        <string>Bansh</string>
+        <key>com.bansh.inputmethod.bansh</key>
+        <string>Bansh</string>
+        <key>com.bansh.inputmethod.bansh.standard</key>
+        <string>Bansh</string>
+    </dict>
+</dict>
+</plist>

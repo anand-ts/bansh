@@ -1,0 +1,37 @@
+# macOS
+.DS_Store
+
+# Local editor state
+.vscode/
+.idea/
+
+# Build products and release artifacts
+build/
+DerivedData/
+*.app
+*.dSYM/
+*.pkg
+*.dmg
+*.zip
+*.xcarchive
+*.xcresult
+*.xccovreport
+*.xccovarchive
+
+# Xcode user state
+*.xcuserstate
+*.xcscmblueprint
+*.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcuserdata/
+
+# Local secrets, signing, and provisioning material
+.env
+.env.*
+*.p12
+*.cer
+*.mobileprovision
+*.provisionprofile
+*.notarytool-profile
+Local.xcconfig
+*.local.xcconfig

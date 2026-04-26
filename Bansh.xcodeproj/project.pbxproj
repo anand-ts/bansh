@@ -1,0 +1,453 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 71;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A10000000000000000000016 /* main.mm in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000000F /* main.mm */; };
+		A10000000000000000000017 /* BanshAppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000010 /* BanshAppDelegate.mm */; };
+		A10000000000000000000018 /* BanshInputController.mm in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000011 /* BanshInputController.mm */; };
+		A10000000000000000000019 /* TransliterationSession.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000012 /* TransliterationSession.cpp */; };
+		A1000000000000000000001B /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A1000000000000000000001A /* Cocoa.framework */; };
+		A1000000000000000000001D /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A1000000000000000000001C /* Carbon.framework */; };
+		A1000000000000000000001F /* InputMethodKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A1000000000000000000001E /* InputMethodKit.framework */; };
+		A10000000000000000000035 /* BanshCoreTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000031 /* BanshCoreTests.mm */; };
+		A10000000000000000000036 /* TransliterationSession.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000012 /* TransliterationSession.cpp */; };
+		A10000000000000000000037 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A10000000000000000000032 /* XCTest.framework */; };
+		A10000000000000000000049 /* BanshInputMethodIcon.tiff in Resources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000045 /* BanshInputMethodIcon.tiff */; };
+		A1000000000000000000004C /* InfoPlist.loctable in Resources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000004B /* InfoPlist.loctable */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		A1000000000000000000000B /* BanshInputMethod.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BanshInputMethod.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1000000000000000000000F /* main.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = main.mm; sourceTree = "<group>"; };
+		A10000000000000000000010 /* BanshAppDelegate.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = BanshAppDelegate.mm; sourceTree = "<group>"; };
+		A10000000000000000000011 /* BanshInputController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = BanshInputController.mm; sourceTree = "<group>"; };
+		A10000000000000000000012 /* TransliterationSession.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = TransliterationSession.cpp; sourceTree = "<group>"; };
+		A10000000000000000000013 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A10000000000000000000014 /* BanshAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BanshAppDelegate.h; sourceTree = "<group>"; };
+		A10000000000000000000015 /* BanshInputController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BanshInputController.h; sourceTree = "<group>"; };
+		A1000000000000000000001A /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
+		A1000000000000000000001C /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = System/Library/Frameworks/Carbon.framework; sourceTree = SDKROOT; };
+		A1000000000000000000001E /* InputMethodKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = InputMethodKit.framework; path = System/Library/Frameworks/InputMethodKit.framework; sourceTree = SDKROOT; };
+		A10000000000000000000025 /* build-dev-app.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "build-dev-app.sh"; sourceTree = "<group>"; };
+		A10000000000000000000026 /* install-dev-input-method.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "install-dev-input-method.sh"; sourceTree = "<group>"; };
+		A10000000000000000000027 /* project.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = project.yml; sourceTree = "<group>"; };
+		A10000000000000000000028 /* TransliterationSession.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TransliterationSession.h; sourceTree = "<group>"; };
+		A1000000000000000000002B /* TransliterationSessionTests.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = TransliterationSessionTests.cpp; sourceTree = "<group>"; };
+		A10000000000000000000031 /* BanshCoreTests.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = BanshCoreTests.mm; sourceTree = "<group>"; };
+		A10000000000000000000032 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = System/Library/Frameworks/XCTest.framework; sourceTree = SDKROOT; };
+		A10000000000000000000033 /* BanshCoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BanshCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A10000000000000000000034 /* restart-input-method-services.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "restart-input-method-services.sh"; sourceTree = "<group>"; };
+		A1000000000000000000003B /* test-core.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "test-core.sh"; sourceTree = "<group>"; };
+		A1000000000000000000003C /* uninstall-dev-input-method.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "uninstall-dev-input-method.sh"; sourceTree = "<group>"; };
+		A10000000000000000000041 /* archive-release.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "archive-release.sh"; sourceTree = "<group>"; };
+		A10000000000000000000045 /* BanshInputMethodIcon.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = BanshInputMethodIcon.tiff; sourceTree = "<group>"; };
+		A1000000000000000000004A /* debug-input-source.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "debug-input-source.sh"; sourceTree = "<group>"; };
+		A1000000000000000000004B /* InfoPlist.loctable */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = InfoPlist.loctable; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A1000000000000000000000C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1000000000000000000001B /* Cocoa.framework in Frameworks */,
+				A1000000000000000000001D /* Carbon.framework in Frameworks */,
+				A1000000000000000000001F /* InputMethodKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A10000000000000000000038 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000000000000000000037 /* XCTest.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A10000000000000000000002 = {
+			isa = PBXGroup;
+			children = (
+				A10000000000000000000005 /* Sources */,
+				A10000000000000000000024 /* scripts */,
+				A10000000000000000000029 /* Tests */,
+				A10000000000000000000027 /* project.yml */,
+				A10000000000000000000004 /* Frameworks */,
+				A10000000000000000000003 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A10000000000000000000003 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A1000000000000000000000B /* BanshInputMethod.app */,
+				A10000000000000000000033 /* BanshCoreTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		A10000000000000000000004 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				A1000000000000000000001A /* Cocoa.framework */,
+				A1000000000000000000001C /* Carbon.framework */,
+				A1000000000000000000001E /* InputMethodKit.framework */,
+				A10000000000000000000032 /* XCTest.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		A10000000000000000000005 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				A10000000000000000000006 /* Core */,
+				A10000000000000000000007 /* InputMethod */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		A10000000000000000000006 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				A10000000000000000000028 /* TransliterationSession.h */,
+				A10000000000000000000012 /* TransliterationSession.cpp */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		A10000000000000000000007 /* InputMethod */ = {
+			isa = PBXGroup;
+			children = (
+				A10000000000000000000014 /* BanshAppDelegate.h */,
+				A10000000000000000000010 /* BanshAppDelegate.mm */,
+				A10000000000000000000015 /* BanshInputController.h */,
+				A10000000000000000000011 /* BanshInputController.mm */,
+				A1000000000000000000000F /* main.mm */,
+				A10000000000000000000013 /* Info.plist */,
+				A1000000000000000000004B /* InfoPlist.loctable */,
+				A10000000000000000000045 /* BanshInputMethodIcon.tiff */,
+			);
+			path = InputMethod;
+			sourceTree = "<group>";
+		};
+		A10000000000000000000024 /* scripts */ = {
+			isa = PBXGroup;
+			children = (
+				A10000000000000000000025 /* build-dev-app.sh */,
+				A10000000000000000000026 /* install-dev-input-method.sh */,
+				A10000000000000000000034 /* restart-input-method-services.sh */,
+				A1000000000000000000003B /* test-core.sh */,
+				A1000000000000000000003C /* uninstall-dev-input-method.sh */,
+				A10000000000000000000041 /* archive-release.sh */,
+				A1000000000000000000004A /* debug-input-source.sh */,
+			);
+			path = scripts;
+			sourceTree = "<group>";
+		};
+		A10000000000000000000029 /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				A1000000000000000000002A /* CoreTests */,
+			);
+			path = Tests;
+			sourceTree = "<group>";
+		};
+		A1000000000000000000002A /* CoreTests */ = {
+			isa = PBXGroup;
+			children = (
+				A1000000000000000000002B /* TransliterationSessionTests.cpp */,
+				A10000000000000000000031 /* BanshCoreTests.mm */,
+			);
+			path = CoreTests;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A1000000000000000000000A /* BanshInputMethod */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A10000000000000000000009 /* Build configuration list for PBXNativeTarget "BanshInputMethod" */;
+			buildPhases = (
+				A1000000000000000000000D /* Sources */,
+				A1000000000000000000000C /* Frameworks */,
+				A1000000000000000000000E /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = BanshInputMethod;
+			productName = BanshInputMethod;
+			productReference = A1000000000000000000000B /* BanshInputMethod.app */;
+			productType = "com.apple.product-type.application";
+		};
+		A10000000000000000000039 /* BanshCoreTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A1000000000000000000003A /* Build configuration list for PBXNativeTarget "BanshCoreTests" */;
+			buildPhases = (
+				A1000000000000000000003D /* Sources */,
+				A10000000000000000000038 /* Frameworks */,
+				A1000000000000000000003E /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = BanshCoreTests;
+			productName = BanshCoreTests;
+			productReference = A10000000000000000000033 /* BanshCoreTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A10000000000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2640;
+				LastUpgradeCheck = 2640;
+				ORGANIZATIONNAME = Bansh;
+				TargetAttributes = {
+					A1000000000000000000000A = {
+						CreatedOnToolsVersion = 26.4;
+					};
+					A10000000000000000000039 = {
+						CreatedOnToolsVersion = 26.4;
+					};
+				};
+			};
+			buildConfigurationList = A10000000000000000000008 /* Build configuration list for PBXProject "Bansh" */;
+			compatibilityVersion = "Xcode 16.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = A10000000000000000000002;
+			minimizedProjectReferenceProxies = 1;
+			productRefGroup = A10000000000000000000003 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A1000000000000000000000A /* BanshInputMethod */,
+				A10000000000000000000039 /* BanshCoreTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A1000000000000000000000E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1000000000000000000004C /* InfoPlist.loctable in Resources */,
+				A10000000000000000000049 /* BanshInputMethodIcon.tiff in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A1000000000000000000003E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A1000000000000000000000D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000000000000000000019 /* TransliterationSession.cpp in Sources */,
+				A10000000000000000000018 /* BanshInputController.mm in Sources */,
+				A10000000000000000000017 /* BanshAppDelegate.mm in Sources */,
+				A10000000000000000000016 /* main.mm in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A1000000000000000000003D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000000000000000000036 /* TransliterationSession.cpp in Sources */,
+				A10000000000000000000035 /* BanshCoreTests.mm in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		A10000000000000000000020 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_CXX_LIBRARY = "libc++";
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		A10000000000000000000021 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_CXX_LIBRARY = "libc++";
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		A10000000000000000000022 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Sources/InputMethod/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited)";
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.bansh.inputmethod.bansh;
+				PRODUCT_NAME = BanshInputMethod;
+				SDKROOT = macosx;
+				SKIP_INSTALL = NO;
+			};
+			name = Debug;
+		};
+		A10000000000000000000023 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COPY_PHASE_STRIP = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_HARDENED_RUNTIME = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Sources/InputMethod/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited)";
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.bansh.inputmethod.bansh;
+				PRODUCT_NAME = BanshInputMethod;
+				SDKROOT = macosx;
+				SKIP_INSTALL = NO;
+			};
+			name = Release;
+		};
+		A1000000000000000000003F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = "$(SRCROOT)/Sources/Core";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.bansh.inputmethod.coretests;
+				PRODUCT_NAME = BanshCoreTests;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		A10000000000000000000040 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COPY_PHASE_STRIP = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_HARDENED_RUNTIME = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = "$(SRCROOT)/Sources/Core";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.bansh.inputmethod.coretests;
+				PRODUCT_NAME = BanshCoreTests;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A10000000000000000000008 /* Build configuration list for PBXProject "Bansh" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A10000000000000000000020 /* Debug */,
+				A10000000000000000000021 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A10000000000000000000009 /* Build configuration list for PBXNativeTarget "BanshInputMethod" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A10000000000000000000022 /* Debug */,
+				A10000000000000000000023 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A1000000000000000000003A /* Build configuration list for PBXNativeTarget "BanshCoreTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A1000000000000000000003F /* Debug */,
+				A10000000000000000000040 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A10000000000000000000001 /* Project object */;
+}
