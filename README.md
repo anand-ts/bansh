@@ -1,8 +1,34 @@
+<p align="center">
+  <a href="https://www.flaticon.com/free-icon/dumpling_9361828?term=dumpling&page=1&position=29&origin=tag&related_id=9361828">
+    <img src="https://cdn-icons-png.flaticon.com/512/9361/9361828.png" alt="Bansh dumpling icon" width="96" height="96">
+  </a>
+</p>
+
 # Bansh (Банш)
 
 Bansh is a native macOS input method for Mongolian Cyrillic transliteration.
 
 The codebase keeps the transliteration engine in portable C++ and the macOS `InputMethodKit` layer thin, so text behavior is deterministic and covered by tests.
+
+## Install
+
+Download the latest release:
+[Bansh-0.1.0-direct-download.zip](https://github.com/anand-ts/bansh/releases/latest/download/Bansh-0.1.0-direct-download.zip)
+
+1. Extract the zip.
+2. Double-click `Install Bansh.command`.
+3. Enter your administrator password when macOS asks.
+4. Open System Settings > Keyboard > Text Input > Input Sources and select Bansh.
+
+If macOS blocks the installer because it was downloaded from the internet, open Terminal and run:
+
+```zsh
+xattr -cr "/path/to/Bansh"
+```
+
+Then open `Install Bansh.command` again.
+
+To uninstall Bansh, double-click `Uninstall Bansh.command` from the extracted folder.
 
 ## Layout
 
@@ -29,5 +55,7 @@ The checked-in project does not include a personal Apple development team ID. Lo
 ## License
 
 Bansh is licensed under the Apache License 2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE).
+
+The README dumpling icon links to [Flaticon icon 9361828](https://www.flaticon.com/free-icon/dumpling_9361828?term=dumpling&page=1&position=29&origin=tag&related_id=9361828).
 
 > Project inspired by [Buuz](https://github.com/odbayar/buuz) on Windows :)
