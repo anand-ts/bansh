@@ -79,15 +79,15 @@ Snapshot typeAscii(TransliterationSession& session, std::string_view ascii)
 void testBasicWord(int& failures)
 {
     TransliterationSession session;
-    const Snapshot snapshot = typeAscii(session, "buuz");
+    const Snapshot snapshot = typeAscii(session, "nom");
 
-    expectEqual("basic word marked text", snapshot.markedText, u"\u0431\u0443\u0443\u0437", failures);
-    expectEqual("basic word raw input", snapshot.rawInput, u"buuz", failures);
-    expectEqual("basic word cursor", snapshot.cursor, 4, failures);
+    expectEqual("basic word marked text", snapshot.markedText, u"\u043D\u043E\u043C", failures);
+    expectEqual("basic word raw input", snapshot.rawInput, u"nom", failures);
+    expectEqual("basic word cursor", snapshot.cursor, 3, failures);
     expectEqual("basic word composing", snapshot.isComposing, true, failures);
 
     const Snapshot committed = session.commit();
-    expectEqual("commit text", committed.committedText, u"\u0431\u0443\u0443\u0437", failures);
+    expectEqual("commit text", committed.committedText, u"\u043D\u043E\u043C", failures);
     expectEqual("commit clears marked text", committed.markedText, u"", failures);
     expectEqual("commit clears raw input", committed.rawInput, u"", failures);
     expectEqual("commit clears composing flag", committed.isComposing, false, failures);
@@ -112,21 +112,21 @@ void testFemaleWordRule(int& failures)
 void testMixedCase(int& failures)
 {
     TransliterationSession session;
-    const Snapshot snapshot = typeAscii(session, "Buuz");
+    const Snapshot snapshot = typeAscii(session, "Nom");
 
-    expectEqual("mixed case", snapshot.markedText, u"\u0411\u0443\u0443\u0437", failures);
+    expectEqual("mixed case", snapshot.markedText, u"\u041D\u043E\u043C", failures);
 }
 
 void testDeleteAfterCursorMove(int& failures)
 {
     TransliterationSession session;
-    typeAscii(session, "buuz");
+    typeAscii(session, "nom");
     session.moveLeft();
     const Snapshot snapshot = session.deleteForward();
 
-    expectEqual("delete after move marked text", snapshot.markedText, u"\u0431\u0443\u0443", failures);
-    expectEqual("delete after move raw input", snapshot.rawInput, u"\u0431\u0443\u0443", failures);
-    expectEqual("delete after move cursor", snapshot.cursor, 3, failures);
+    expectEqual("delete after move marked text", snapshot.markedText, u"\u043D\u043E", failures);
+    expectEqual("delete after move raw input", snapshot.rawInput, u"\u043D\u043E", failures);
+    expectEqual("delete after move cursor", snapshot.cursor, 2, failures);
 }
 
 void testDoubleApostrophe(int& failures)

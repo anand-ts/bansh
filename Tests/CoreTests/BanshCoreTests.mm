@@ -40,15 +40,15 @@ NSString* markedTextForAscii(std::string_view ascii)
 - (void)testBasicWordComposition
 {
     TransliterationSession session;
-    const Snapshot snapshot = typeAscii(session, "buuz");
+    const Snapshot snapshot = typeAscii(session, "nom");
 
-    XCTAssertEqualObjects(NSStringFromEngineString(snapshot.markedText), @"бууз");
-    XCTAssertEqualObjects(NSStringFromEngineString(snapshot.rawInput), @"buuz");
-    XCTAssertEqual(snapshot.cursor, static_cast<std::size_t>(4));
+    XCTAssertEqualObjects(NSStringFromEngineString(snapshot.markedText), @"ном");
+    XCTAssertEqualObjects(NSStringFromEngineString(snapshot.rawInput), @"nom");
+    XCTAssertEqual(snapshot.cursor, static_cast<std::size_t>(3));
     XCTAssertTrue(snapshot.isComposing);
 
     const Snapshot committed = session.commit();
-    XCTAssertEqualObjects(NSStringFromEngineString(committed.committedText), @"бууз");
+    XCTAssertEqualObjects(NSStringFromEngineString(committed.committedText), @"ном");
     XCTAssertEqualObjects(NSStringFromEngineString(committed.markedText), @"");
     XCTAssertEqualObjects(NSStringFromEngineString(committed.rawInput), @"");
     XCTAssertFalse(committed.isComposing);
@@ -98,21 +98,21 @@ NSString* markedTextForAscii(std::string_view ascii)
 - (void)testMixedCaseInput
 {
     TransliterationSession session;
-    const Snapshot snapshot = typeAscii(session, "Buuz");
+    const Snapshot snapshot = typeAscii(session, "Nom");
 
-    XCTAssertEqualObjects(NSStringFromEngineString(snapshot.markedText), @"Бууз");
+    XCTAssertEqualObjects(NSStringFromEngineString(snapshot.markedText), @"Ном");
 }
 
 - (void)testDeleteAfterCursorMove
 {
     TransliterationSession session;
-    typeAscii(session, "buuz");
+    typeAscii(session, "nom");
     session.moveLeft();
     const Snapshot snapshot = session.deleteForward();
 
-    XCTAssertEqualObjects(NSStringFromEngineString(snapshot.markedText), @"буу");
-    XCTAssertEqualObjects(NSStringFromEngineString(snapshot.rawInput), @"буу");
-    XCTAssertEqual(snapshot.cursor, static_cast<std::size_t>(3));
+    XCTAssertEqualObjects(NSStringFromEngineString(snapshot.markedText), @"но");
+    XCTAssertEqualObjects(NSStringFromEngineString(snapshot.rawInput), @"но");
+    XCTAssertEqual(snapshot.cursor, static_cast<std::size_t>(2));
 }
 
 - (void)testInsertAfterCursorMoveKeepsCompositionEditable
