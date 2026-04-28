@@ -26,16 +26,43 @@ NSUInteger disallowedModifierFlags()
     return NSEventModifierFlagCommand | NSEventModifierFlagControl | NSEventModifierFlagOption;
 }
 
+NSUInteger deviceIndependentModifierFlags(NSUInteger flags)
+{
+    return flags & NSEventModifierFlagDeviceIndependentFlagsMask;
+}
+
+BOOL isControlSlashShortcut(NSString* string, NSInteger keyCode, NSUInteger flags)
+{
+    NSUInteger modifiers = deviceIndependentModifierFlags(flags);
+    const BOOL isControlSlashCharacter =
+        [string isEqualToString:[NSString stringWithFormat:@"%C", static_cast<unichar>(0x1F)]];
+    const BOOL isSlashInput = [string isEqualToString:@"/"] || keyCode == kVK_ANSI_Slash;
+
+    return isControlSlashCharacter ||
+        (isSlashInput &&
+        (modifiers & NSEventModifierFlagControl) != 0 &&
+        (modifiers & (NSEventModifierFlagCommand | NSEventModifierFlagOption | NSEventModifierFlagShift)) == 0);
+}
+
 } // namespace
 
 @interface BanshInputController () {
     TransliterationSession session_;
+    NSPanel* cheatSheetPanel_;
 }
 
 - (void)applySnapshot:(const Snapshot&)snapshot client:(id<IMKTextInput, NSObject>)client;
 - (BOOL)commitCompositionAndInsertText:(NSString*)text client:(id<IMKTextInput, NSObject>)client;
 - (NSRange)committedTextReplacementRangeForClient:(id<IMKTextInput, NSObject>)client;
 - (void)clearMarkedTextForClient:(id<IMKTextInput, NSObject>)client;
+- (NSPanel*)createCheatSheetPanel;
+- (NSTextField*)cheatSheetLabel:(NSString*)text font:(NSFont*)font color:(NSColor*)color;
+- (NSView*)cheatSheetMappingGridWithRows:(NSArray<NSArray<NSString*>*>*)rows;
+- (NSView*)cheatSheetSectionWithTitle:(NSString*)title rows:(NSArray<NSArray<NSString*>*>*)rows;
+- (void)hideCheatSheetPanel;
+- (NSRect)preferredCheatSheetFrameForClient:(id<IMKTextInput, NSObject>)client panelSize:(NSSize)panelSize;
+- (NSScreen*)screenForRect:(NSRect)rect fallback:(NSScreen*)fallback;
+- (void)toggleCheatSheetPanelForClient:(id<IMKTextInput, NSObject>)client;
 - (void)updateCompositionForClient:(id<IMKTextInput, NSObject>)client snapshot:(const Snapshot&)snapshot;
 
 @end
@@ -46,6 +73,11 @@ NSUInteger disallowedModifierFlags()
 {
     id<IMKTextInput, NSObject> client = sender;
     const Snapshot& current = session_.snapshot();
+
+    if (isControlSlashShortcut(string, keyCode, flags)) {
+        [self toggleCheatSheetPanelForClient:client];
+        return YES;
+    }
 
     if ((flags & disallowedModifierFlags()) != 0) {
         return NO;
@@ -72,10 +104,20 @@ NSUInteger disallowedModifierFlags()
     return NO;
 }
 
+- (BOOL)inputText:(NSString*)string client:(id)sender
+{
+    return [self inputText:string key:0 modifiers:0 client:sender];
+}
+
 - (BOOL)didCommandBySelector:(SEL)selector client:(id)sender
 {
     id<IMKTextInput, NSObject> client = sender;
     const Snapshot& current = session_.snapshot();
+
+    if (selector == @selector(cancelOperation:) && cheatSheetPanel_ != nil && [cheatSheetPanel_ isVisible]) {
+        [self hideCheatSheetPanel];
+        return YES;
+    }
 
     if (!current.isComposing) {
         return NO;
@@ -169,6 +211,8 @@ NSUInteger disallowedModifierFlags()
 
 - (void)deactivateServer:(id)sender
 {
+    [self hideCheatSheetPanel];
+
     if (session_.snapshot().isComposing) {
         [self commitComposition:sender];
     }
@@ -207,6 +251,8 @@ NSUInteger disallowedModifierFlags()
 
 - (void)inputControllerWillClose
 {
+    [self hideCheatSheetPanel];
+
     id<IMKTextInput, NSObject> client = [self client];
     if (client != nil && session_.snapshot().isComposing) {
         [self commitComposition:client];
@@ -216,6 +262,192 @@ NSUInteger disallowedModifierFlags()
 - (NSArray*)candidates:(id)sender
 {
     return @[];
+}
+
+- (NSTextField*)cheatSheetLabel:(NSString*)text font:(NSFont*)font color:(NSColor*)color
+{
+    NSTextField* label = [NSTextField labelWithString:text];
+    label.font = font;
+    label.textColor = color;
+    label.lineBreakMode = NSLineBreakByTruncatingTail;
+    return label;
+}
+
+- (NSView*)cheatSheetMappingGridWithRows:(NSArray<NSArray<NSString*>*>*)rows
+{
+    NSGridView* grid = [[NSGridView alloc] initWithFrame:NSZeroRect];
+    grid.translatesAutoresizingMaskIntoConstraints = NO;
+    grid.rowSpacing = 5.0;
+    grid.columnSpacing = 8.0;
+    grid.xPlacement = NSGridCellPlacementFill;
+
+    NSFont* mappingFont = [NSFont monospacedSystemFontOfSize:12.0 weight:NSFontWeightMedium];
+    NSColor* mappingColor = [NSColor labelColor];
+
+    for (NSArray<NSString*>* row in rows) {
+        NSMutableArray<NSView*>* cells = [NSMutableArray array];
+        for (NSUInteger index = 0; index + 1 < row.count; index += 2) {
+            NSString* mapping = [NSString stringWithFormat:@"%@ -> %@", row[index], row[index + 1]];
+            [cells addObject:[self cheatSheetLabel:mapping font:mappingFont color:mappingColor]];
+        }
+        [grid addRowWithViews:cells];
+    }
+
+    return grid;
+}
+
+- (NSView*)cheatSheetSectionWithTitle:(NSString*)title rows:(NSArray<NSArray<NSString*>*>*)rows
+{
+    NSStackView* section = [[NSStackView alloc] initWithFrame:NSZeroRect];
+    section.translatesAutoresizingMaskIntoConstraints = NO;
+    section.orientation = NSUserInterfaceLayoutOrientationVertical;
+    section.alignment = NSLayoutAttributeLeading;
+    section.spacing = 5.0;
+
+    NSTextField* titleLabel = [self cheatSheetLabel:title
+                                              font:[NSFont systemFontOfSize:11.0 weight:NSFontWeightSemibold]
+                                             color:[NSColor secondaryLabelColor]];
+    [section addArrangedSubview:titleLabel];
+    [section addArrangedSubview:[self cheatSheetMappingGridWithRows:rows]];
+    return section;
+}
+
+- (NSPanel*)createCheatSheetPanel
+{
+    const NSRect contentRect = NSMakeRect(0, 0, 390, 286);
+    NSPanel* panel = [[NSPanel alloc] initWithContentRect:contentRect
+                                                styleMask:NSWindowStyleMaskBorderless | NSWindowStyleMaskNonactivatingPanel
+                                                  backing:NSBackingStoreBuffered
+                                                    defer:NO];
+    panel.level = NSFloatingWindowLevel;
+    panel.opaque = NO;
+    panel.backgroundColor = [NSColor clearColor];
+    panel.hasShadow = YES;
+    panel.hidesOnDeactivate = NO;
+    panel.collectionBehavior = NSWindowCollectionBehaviorTransient | NSWindowCollectionBehaviorMoveToActiveSpace;
+
+    NSVisualEffectView* background = [[NSVisualEffectView alloc] initWithFrame:contentRect];
+    background.translatesAutoresizingMaskIntoConstraints = NO;
+    background.material = NSVisualEffectMaterialHUDWindow;
+    background.blendingMode = NSVisualEffectBlendingModeBehindWindow;
+    background.state = NSVisualEffectStateActive;
+    background.wantsLayer = YES;
+    background.layer.cornerRadius = 8.0;
+    background.layer.masksToBounds = YES;
+
+    NSStackView* content = [[NSStackView alloc] initWithFrame:NSZeroRect];
+    content.translatesAutoresizingMaskIntoConstraints = NO;
+    content.orientation = NSUserInterfaceLayoutOrientationVertical;
+    content.alignment = NSLayoutAttributeLeading;
+    content.spacing = 10.0;
+
+    NSTextField* title = [self cheatSheetLabel:@"Bansh mappings"
+                                          font:[NSFont systemFontOfSize:13.0 weight:NSFontWeightSemibold]
+                                         color:[NSColor labelColor]];
+    [content addArrangedSubview:title];
+
+    [content addArrangedSubview:[self cheatSheetSectionWithTitle:@"Vowels"
+                                                            rows:@[
+                                                                @[ @"a", @"а", @"e", @"э", @"i", @"и" ],
+                                                                @[ @"o", @"о", @"u", @"у", @"v", @"ү" ],
+                                                                @[ @"ya", @"я", @"ye", @"е", @"yo", @"ё" ],
+                                                                @[ @"yu", @"ю", @"yi", @"й", @"y", @"ы" ],
+                                                            ]]];
+
+    [content addArrangedSubview:[self cheatSheetSectionWithTitle:@"Consonants"
+                                                            rows:@[
+                                                                @[ @"b", @"б", @"p", @"п", @"m", @"м" ],
+                                                                @[ @"d", @"д", @"t", @"т", @"n", @"н" ],
+                                                                @[ @"g", @"г", @"k", @"к", @"kh", @"х" ],
+                                                                @[ @"l", @"л", @"r", @"р", @"s", @"с" ],
+                                                            ]]];
+
+    [content addArrangedSubview:[self cheatSheetSectionWithTitle:@"Combinations"
+                                                            rows:@[
+                                                                @[ @"sh", @"ш", @"ch", @"ч", @"ts", @"ц" ],
+                                                                @[ @"j", @"ж", @"z", @"з", @"f", @"ф" ],
+                                                                @[ @"'", @"separator", @"\"", @"ъ", @"w", @"в" ],
+                                                            ]]];
+
+    [background addSubview:content];
+    [NSLayoutConstraint activateConstraints:@[
+        [content.leadingAnchor constraintEqualToAnchor:background.leadingAnchor constant:14.0],
+        [content.trailingAnchor constraintEqualToAnchor:background.trailingAnchor constant:-14.0],
+        [content.topAnchor constraintEqualToAnchor:background.topAnchor constant:12.0],
+        [content.bottomAnchor constraintLessThanOrEqualToAnchor:background.bottomAnchor constant:-12.0],
+    ]];
+
+    panel.contentView = background;
+    return panel;
+}
+
+- (NSScreen*)screenForRect:(NSRect)rect fallback:(NSScreen*)fallback
+{
+    NSPoint midpoint = NSMakePoint(NSMidX(rect), NSMidY(rect));
+    for (NSScreen* candidate in [NSScreen screens]) {
+        if (NSPointInRect(midpoint, candidate.visibleFrame) ||
+            NSIntersectsRect(rect, candidate.visibleFrame)) {
+            return candidate;
+        }
+    }
+    return fallback ?: [NSScreen mainScreen];
+}
+
+- (NSRect)preferredCheatSheetFrameForClient:(id<IMKTextInput, NSObject>)client panelSize:(NSSize)panelSize
+{
+    NSScreen* screen = [NSScreen mainScreen];
+    NSRect caretRect = NSZeroRect;
+
+    if (client != nil) {
+        NSRange selectedRange = [client selectedRange];
+        if (selectedRange.location != NSNotFound) {
+            NSRange actualRange = NSMakeRange(NSNotFound, 0);
+            caretRect = [client firstRectForCharacterRange:selectedRange actualRange:&actualRange];
+        }
+    }
+
+    if (!NSEqualRects(caretRect, NSZeroRect)) {
+        NSPoint caretPoint = NSMakePoint(NSMidX(caretRect), NSMinY(caretRect));
+        screen = [self screenForRect:caretRect fallback:screen];
+        NSRect visibleFrame = screen.visibleFrame;
+        CGFloat x = caretPoint.x + 12.0;
+        CGFloat y = caretPoint.y - panelSize.height - 8.0;
+
+        if (y < NSMinY(visibleFrame)) {
+            y = NSMaxY(caretRect) + 8.0;
+        }
+
+        x = MIN(MAX(x, NSMinX(visibleFrame) + 12.0), NSMaxX(visibleFrame) - panelSize.width - 12.0);
+        y = MIN(MAX(y, NSMinY(visibleFrame) + 12.0), NSMaxY(visibleFrame) - panelSize.height - 12.0);
+        return NSMakeRect(x, y, panelSize.width, panelSize.height);
+    }
+
+    NSRect visibleFrame = screen.visibleFrame;
+    return NSMakeRect(NSMaxX(visibleFrame) - panelSize.width - 18.0,
+                      NSMaxY(visibleFrame) - panelSize.height - 18.0,
+                      panelSize.width,
+                      panelSize.height);
+}
+
+- (void)toggleCheatSheetPanelForClient:(id<IMKTextInput, NSObject>)client
+{
+    if (cheatSheetPanel_ != nil && [cheatSheetPanel_ isVisible]) {
+        [self hideCheatSheetPanel];
+        return;
+    }
+
+    if (cheatSheetPanel_ == nil) {
+        cheatSheetPanel_ = [self createCheatSheetPanel];
+    }
+
+    NSSize panelSize = cheatSheetPanel_.frame.size;
+    [cheatSheetPanel_ setFrame:[self preferredCheatSheetFrameForClient:client panelSize:panelSize] display:NO];
+    [cheatSheetPanel_ orderFrontRegardless];
+}
+
+- (void)hideCheatSheetPanel
+{
+    [cheatSheetPanel_ orderOut:nil];
 }
 
 - (void)clearMarkedTextForClient:(id<IMKTextInput, NSObject>)client

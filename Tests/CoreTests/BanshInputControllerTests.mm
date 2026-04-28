@@ -1,5 +1,7 @@
 #import <XCTest/XCTest.h>
 
+#import <Carbon/Carbon.h>
+
 #import "BanshInputController.h"
 
 @interface BanshFakeTextClient : NSObject <IMKTextInput>
@@ -223,6 +225,33 @@ static NSString* BanshPlainString(id string)
 
     XCTAssertEqualObjects(client.text, @"сайн?\n\nбанш идье");
     XCTAssertEqual([client markedRange].location, [@"сайн?\n\nбанш " length]);
+}
+
+- (void)testControlSlashShortcutAcceptsControlCharacterVariant
+{
+    BanshInputController* controller = [BanshInputController new];
+    BanshFakeTextClient* client = [BanshFakeTextClient new];
+    NSString* controlSlash = [NSString stringWithFormat:@"%C", static_cast<unichar>(0x1F)];
+
+    const BOOL handled = [controller inputText:controlSlash
+                                          key:kVK_ANSI_Slash
+                                    modifiers:NSEventModifierFlagControl
+                                       client:client];
+
+    XCTAssertTrue(handled);
+    XCTAssertEqualObjects(client.text, @"");
+}
+
+- (void)testControlSlashShortcutAcceptsKeybindingInputPath
+{
+    BanshInputController* controller = [BanshInputController new];
+    BanshFakeTextClient* client = [BanshFakeTextClient new];
+    NSString* controlSlash = [NSString stringWithFormat:@"%C", static_cast<unichar>(0x1F)];
+
+    const BOOL handled = [controller inputText:controlSlash client:client];
+
+    XCTAssertTrue(handled);
+    XCTAssertEqualObjects(client.text, @"");
 }
 
 @end
