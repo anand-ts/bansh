@@ -36,6 +36,27 @@ sign_binary_best_effort()
   fi
 }
 
+verify_helper_binary()
+{
+  local binary_path="$1"
+  local architecture
+  local minimum_version
+
+  for architecture in arm64 x86_64; do
+    if ! /usr/bin/lipo "$binary_path" -verify_arch "$architecture"; then
+      echo "registration helper is missing the $architecture architecture" >&2
+      exit 1
+    fi
+
+    minimum_version=$(/usr/bin/vtool -arch "$architecture" -show-build "$binary_path" |
+      /usr/bin/awk '$1 == "minos" { print $2; exit }')
+    if [[ "$minimum_version" != "$HELPER_DEPLOYMENT_TARGET" ]]; then
+      echo "registration helper $architecture minimum macOS is $minimum_version, expected $HELPER_DEPLOYMENT_TARGET" >&2
+      exit 1
+    fi
+  done
+}
+
 if [[ ! -x "$ARCHIVE_SCRIPT" ]]; then
   echo "archive script not found at $ARCHIVE_SCRIPT" >&2
   exit 1
@@ -53,16 +74,26 @@ if [[ ! -d "$ARCHIVE_APP" ]]; then
   exit 1
 fi
 
+HELPER_DEPLOYMENT_TARGET=$(/usr/libexec/PlistBuddy -c 'Print :LSMinimumSystemVersion' "$ARCHIVE_APP/Contents/Info.plist" 2>/dev/null || true)
+if [[ -z "$HELPER_DEPLOYMENT_TARGET" ]]; then
+  echo "archived app is missing LSMinimumSystemVersion" >&2
+  exit 1
+fi
+
 /bin/rm -rf "$DIST_DIR"
 /bin/mkdir -p "$SUPPORT_DIR"
 /usr/bin/ditto "$ARCHIVE_APP" "$APP_PATH"
 
 /usr/bin/clang -fmodules -fmodules-cache-path="$ROOT_DIR/build/clang-mod-cache" \
+  -arch arm64 \
+  -arch x86_64 \
+  -mmacosx-version-min="$HELPER_DEPLOYMENT_TARGET" \
   -framework Foundation \
   -framework Carbon \
   "$HELPER_SOURCE" \
   -o "$HELPER_BINARY"
 
+verify_helper_binary "$HELPER_BINARY"
 sign_binary_best_effort "$HELPER_BINARY"
 
 cat >"$INSTALL_SCRIPT_PATH" <<'EOF'
@@ -250,9 +281,9 @@ EOF
 /usr/bin/xattr -cr "$DIST_DIR" >/dev/null 2>&1 || true
 
 VERSION=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$APP_PATH/Contents/Info.plist" 2>/dev/null || echo "0.0.0")
-ZIP_PATH="${ZIP_PATH:-$DIST_ROOT/Bansh-${VERSION}-direct-download.zip}"
+ZIP_PATH="${ZIP_PATH:-$DIST_ROOT/Bansh-direct-download.zip}"
 /bin/rm -f "$ZIP_PATH"
 /usr/bin/ditto -c -k --keepParent --norsrc "$DIST_DIR" "$ZIP_PATH"
 
 echo "Created direct-download folder: $DIST_DIR"
-echo "Created direct-download zip: $ZIP_PATH"
+echo "Created Bansh $VERSION direct-download zip: $ZIP_PATH"

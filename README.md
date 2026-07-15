@@ -6,6 +6,8 @@
 
 # Bansh (Банш)
 
+[![Downloads](https://img.shields.io/github/downloads/anand-ts/bansh/total?style=flat-square&label=downloads)](https://github.com/anand-ts/bansh/releases)
+
 > bansh (банш) = dumpling
 
 <p align="center">
@@ -18,7 +20,7 @@ For example, if you type `bansh id'ye`, it appears as `банш идье`.
 ## Install
 
 Download the latest release:
-[Bansh-0.1.1-direct-download.zip](https://github.com/anand-ts/bansh/releases/latest/download/Bansh-0.1.1-direct-download.zip)
+[Bansh-direct-download.zip](https://github.com/anand-ts/bansh/releases/latest/download/Bansh-direct-download.zip)
 
 1. Extract the zip.
 2. Double-click `Install Bansh.command`.

@@ -31,6 +31,18 @@ static NSString* BanshPlainString(id string)
     return string ?: @"";
 }
 
+static NSArray<NSString*>* BanshTextValuesInView(NSView* view)
+{
+    NSMutableArray<NSString*>* values = [NSMutableArray array];
+    if ([view isKindOfClass:[NSTextField class]]) {
+        [values addObject:[(NSTextField*)view stringValue]];
+    }
+    for (NSView* subview in view.subviews) {
+        [values addObjectsFromArray:BanshTextValuesInView(subview)];
+    }
+    return values;
+}
+
 - (NSRange)clampedRange:(NSRange)range
 {
     if (range.location == NSNotFound) {
@@ -252,6 +264,68 @@ static NSString* BanshPlainString(id string)
 
     XCTAssertTrue(handled);
     XCTAssertEqualObjects(client.text, @"");
+}
+
+- (void)testCheatSheetMappingsMatchTheEngine
+{
+    BanshInputController* controller = [BanshInputController new];
+    BanshFakeTextClient* client = [BanshFakeTextClient new];
+    NSString* controlSlash = [NSString stringWithFormat:@"%C", static_cast<unichar>(0x1F)];
+    NSDictionary<NSString*, NSString*>* mappings = @{
+        @"a" : @"а", @"e" : @"э", @"i" : @"и",
+        @"o" : @"о", @"u" : @"у", @"q" : @"ө",
+        @"ya" : @"я", @"ye" : @"е", @"yo" : @"ё",
+        @"yu" : @"ю", @"w" : @"ү", @"y" : @"ы",
+        @"b" : @"б", @"p" : @"п", @"m" : @"м",
+        @"d" : @"д", @"t" : @"т", @"n" : @"н",
+        @"g" : @"г", @"k" : @"к", @"kh" : @"х",
+        @"l" : @"л", @"r" : @"р", @"s" : @"с",
+        @"sh" : @"ш", @"ch" : @"ч", @"c" : @"ц",
+        @"j" : @"ж", @"z" : @"з", @"f" : @"ф",
+        @"'" : @"ь", @"\"" : @"ъ", @"v" : @"в",
+    };
+
+    XCTAssertTrue([controller inputText:controlSlash client:client]);
+
+    NSPanel* panel = [controller valueForKey:@"cheatSheetPanel_"];
+    XCTAssertNotNil(panel);
+    NSArray<NSString*>* labels = BanshTextValuesInView(panel.contentView);
+
+    for (NSString* input in mappings) {
+        NSString* output = mappings[input];
+        NSString* label = [NSString stringWithFormat:@"%@ -> %@", input, output];
+        XCTAssertTrue([labels containsObject:label], @"Cheat sheet is missing %@", label);
+
+        BanshInputController* mappingController = [BanshInputController new];
+        BanshFakeTextClient* mappingClient = [BanshFakeTextClient new];
+        [self typeASCII:input controller:mappingController client:mappingClient];
+        XCTAssertEqualObjects(mappingClient.text, output, @"Cheat sheet mapping %@ does not match the engine", label);
+    }
+
+    XCTAssertFalse([labels containsObject:@"v -> ү"]);
+    XCTAssertFalse([labels containsObject:@"yi -> й"]);
+    XCTAssertFalse([labels containsObject:@"ts -> ц"]);
+    [panel orderOut:nil];
+}
+
+- (void)testCompositionLimitCommitsAndStartsANewComposition
+{
+    BanshInputController* controller = [BanshInputController new];
+    BanshFakeTextClient* client = [BanshFakeTextClient new];
+
+    for (NSUInteger index = 0; index < 50; ++index) {
+        XCTAssertTrue([controller inputText:@"a" key:0 modifiers:0 client:client]);
+    }
+
+    XCTAssertTrue([controller inputText:@"z" key:0 modifiers:0 client:client]);
+
+    NSString* committedPrefix = [@"" stringByPaddingToLength:50 withString:@"а" startingAtIndex:0];
+    XCTAssertEqualObjects(client.text, [committedPrefix stringByAppendingString:@"з"]);
+    XCTAssertTrue(NSEqualRanges([client markedRange], NSMakeRange(50, 1)));
+
+    XCTAssertTrue([controller inputText:@" " key:0 modifiers:0 client:client]);
+    XCTAssertEqualObjects(client.text, [committedPrefix stringByAppendingString:@"з "]);
+    XCTAssertEqual([client markedRange].location, NSNotFound);
 }
 
 @end

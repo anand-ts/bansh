@@ -34,7 +34,7 @@ This is for local iteration only. Proper signing, notarization, installer packag
 ## Release Staging
 
 - `scripts/archive-release.sh` creates a Release `.xcarchive` at `build/release/BanshInputMethod.xcarchive`
-- `scripts/package-direct-download.sh` builds the archive, bundles a standalone install helper, and writes `build/direct-download/Bansh-<version>-direct-download.zip`
+- `scripts/package-direct-download.sh` builds the archive, bundles a universal standalone install helper, and writes `build/direct-download/Bansh-direct-download.zip`
 
 ## Direct Download Flow
 

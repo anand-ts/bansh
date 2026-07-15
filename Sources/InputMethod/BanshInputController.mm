@@ -87,7 +87,11 @@ BOOL isControlSlashShortcut(NSString* string, NSInteger keyCode, NSUInteger flag
         const char16_t scalar = static_cast<char16_t>([string characterAtIndex:0]);
 
         if (TransliterationSession::isInputCharacter(scalar)) {
-            const Snapshot snapshot = session_.insert(scalar);
+            Snapshot snapshot = session_.insert(scalar);
+            if (!snapshot.changed && snapshot.isComposing) {
+                [self commitComposition:client];
+                snapshot = session_.insert(scalar);
+            }
             [self applySnapshot:snapshot client:client];
             return snapshot.changed ? YES : NO;
         }
@@ -349,9 +353,9 @@ BOOL isControlSlashShortcut(NSString* string, NSInteger keyCode, NSUInteger flag
     [content addArrangedSubview:[self cheatSheetSectionWithTitle:@"Vowels"
                                                             rows:@[
                                                                 @[ @"a", @"а", @"e", @"э", @"i", @"и" ],
-                                                                @[ @"o", @"о", @"u", @"у", @"v", @"ү" ],
+                                                                @[ @"o", @"о", @"u", @"у", @"q", @"ө" ],
                                                                 @[ @"ya", @"я", @"ye", @"е", @"yo", @"ё" ],
-                                                                @[ @"yu", @"ю", @"yi", @"й", @"y", @"ы" ],
+                                                                @[ @"yu", @"ю", @"w", @"ү", @"y", @"ы" ],
                                                             ]]];
 
     [content addArrangedSubview:[self cheatSheetSectionWithTitle:@"Consonants"
@@ -364,9 +368,9 @@ BOOL isControlSlashShortcut(NSString* string, NSInteger keyCode, NSUInteger flag
 
     [content addArrangedSubview:[self cheatSheetSectionWithTitle:@"Combinations"
                                                             rows:@[
-                                                                @[ @"sh", @"ш", @"ch", @"ч", @"ts", @"ц" ],
+                                                                @[ @"sh", @"ш", @"ch", @"ч", @"c", @"ц" ],
                                                                 @[ @"j", @"ж", @"z", @"з", @"f", @"ф" ],
-                                                                @[ @"'", @"separator", @"\"", @"ъ", @"w", @"в" ],
+                                                                @[ @"'", @"ь", @"\"", @"ъ", @"v", @"в" ],
                                                             ]]];
 
     [background addSubview:content];
