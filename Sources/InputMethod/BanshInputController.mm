@@ -1,4 +1,5 @@
 #import "BanshInputController.h"
+#import "BanshMappingCatalog.h"
 #import "BanshUpdateChecker.h"
 
 #import <Carbon/Carbon.h>
@@ -58,8 +59,8 @@ BOOL isControlSlashShortcut(NSString* string, NSInteger keyCode, NSUInteger flag
 - (void)clearMarkedTextForClient:(id<IMKTextInput, NSObject>)client;
 - (NSPanel*)createCheatSheetPanel;
 - (NSTextField*)cheatSheetLabel:(NSString*)text font:(NSFont*)font color:(NSColor*)color;
-- (NSView*)cheatSheetMappingGridWithRows:(NSArray<NSArray<NSString*>*>*)rows;
-- (NSView*)cheatSheetSectionWithTitle:(NSString*)title rows:(NSArray<NSArray<NSString*>*>*)rows;
+- (NSView*)cheatSheetMappingGridWithItems:(NSArray<BanshMappingItem*>*)items;
+- (NSView*)cheatSheetSection:(BanshMappingSection*)mappingSection;
 - (void)hideCheatSheetPanel;
 - (NSRect)preferredCheatSheetFrameForClient:(id<IMKTextInput, NSObject>)client panelSize:(NSSize)panelSize;
 - (NSScreen*)screenForRect:(NSRect)rect fallback:(NSScreen*)fallback;
@@ -279,22 +280,34 @@ BOOL isControlSlashShortcut(NSString* string, NSInteger keyCode, NSUInteger flag
     return label;
 }
 
-- (NSView*)cheatSheetMappingGridWithRows:(NSArray<NSArray<NSString*>*>*)rows
+- (NSView*)cheatSheetMappingGridWithItems:(NSArray<BanshMappingItem*>*)items
 {
     NSGridView* grid = [[NSGridView alloc] initWithFrame:NSZeroRect];
     grid.translatesAutoresizingMaskIntoConstraints = NO;
-    grid.rowSpacing = 5.0;
-    grid.columnSpacing = 8.0;
-    grid.xPlacement = NSGridCellPlacementFill;
+    grid.rowSpacing = 7.0;
+    grid.columnSpacing = 10.0;
+    grid.xPlacement = NSGridCellPlacementLeading;
+    grid.yPlacement = NSGridCellPlacementCenter;
 
     NSFont* mappingFont = [NSFont monospacedSystemFontOfSize:12.0 weight:NSFontWeightMedium];
     NSColor* mappingColor = [NSColor labelColor];
 
-    for (NSArray<NSString*>* row in rows) {
+    constexpr NSUInteger kColumnCount = 3;
+    for (NSUInteger rowIndex = 0; rowIndex < items.count; rowIndex += kColumnCount) {
         NSMutableArray<NSView*>* cells = [NSMutableArray array];
-        for (NSUInteger index = 0; index + 1 < row.count; index += 2) {
-            NSString* mapping = [NSString stringWithFormat:@"%@ -> %@", row[index], row[index + 1]];
-            [cells addObject:[self cheatSheetLabel:mapping font:mappingFont color:mappingColor]];
+        for (NSUInteger columnIndex = 0; columnIndex < kColumnCount; ++columnIndex) {
+            const NSUInteger itemIndex = rowIndex + columnIndex;
+            NSView* cell = nil;
+            if (itemIndex < items.count) {
+                NSString* mapping = BanshMappingLabel(items[itemIndex]);
+                NSTextField* label = [self cheatSheetLabel:mapping font:mappingFont color:mappingColor];
+                label.toolTip = mapping;
+                cell = label;
+            } else {
+                cell = [NSView new];
+            }
+            [cell.widthAnchor constraintEqualToConstant:156.0].active = YES;
+            [cells addObject:cell];
         }
         [grid addRowWithViews:cells];
     }
@@ -302,7 +315,7 @@ BOOL isControlSlashShortcut(NSString* string, NSInteger keyCode, NSUInteger flag
     return grid;
 }
 
-- (NSView*)cheatSheetSectionWithTitle:(NSString*)title rows:(NSArray<NSArray<NSString*>*>*)rows
+- (NSView*)cheatSheetSection:(BanshMappingSection*)mappingSection
 {
     NSStackView* section = [[NSStackView alloc] initWithFrame:NSZeroRect];
     section.translatesAutoresizingMaskIntoConstraints = NO;
@@ -310,78 +323,85 @@ BOOL isControlSlashShortcut(NSString* string, NSInteger keyCode, NSUInteger flag
     section.alignment = NSLayoutAttributeLeading;
     section.spacing = 5.0;
 
-    NSTextField* titleLabel = [self cheatSheetLabel:title
+    NSTextField* titleLabel = [self cheatSheetLabel:mappingSection.title
                                               font:[NSFont systemFontOfSize:11.0 weight:NSFontWeightSemibold]
                                              color:[NSColor secondaryLabelColor]];
     [section addArrangedSubview:titleLabel];
-    [section addArrangedSubview:[self cheatSheetMappingGridWithRows:rows]];
+    [section addArrangedSubview:[self cheatSheetMappingGridWithItems:mappingSection.items]];
     return section;
 }
 
 - (NSPanel*)createCheatSheetPanel
 {
-    const NSRect contentRect = NSMakeRect(0, 0, 390, 286);
+    const NSRect contentRect = NSMakeRect(0, 0, 560, 500);
     NSPanel* panel = [[NSPanel alloc] initWithContentRect:contentRect
-                                                styleMask:NSWindowStyleMaskBorderless | NSWindowStyleMaskNonactivatingPanel
+                                                styleMask:NSWindowStyleMaskTitled |
+                                                    NSWindowStyleMaskClosable |
+                                                    NSWindowStyleMaskUtilityWindow |
+                                                    NSWindowStyleMaskNonactivatingPanel
                                                   backing:NSBackingStoreBuffered
                                                     defer:NO];
+    panel.title = @"Bansh Mappings";
     panel.level = NSFloatingWindowLevel;
     panel.opaque = NO;
     panel.backgroundColor = [NSColor clearColor];
     panel.hasShadow = YES;
     panel.hidesOnDeactivate = NO;
-    panel.collectionBehavior = NSWindowCollectionBehaviorTransient | NSWindowCollectionBehaviorMoveToActiveSpace;
+    panel.becomesKeyOnlyIfNeeded = YES;
+    panel.movableByWindowBackground = YES;
+    panel.releasedWhenClosed = NO;
+    panel.restorable = NO;
+    panel.excludedFromWindowsMenu = YES;
+    panel.animationBehavior = NSWindowAnimationBehaviorUtilityWindow;
+    panel.collectionBehavior = NSWindowCollectionBehaviorTransient |
+        NSWindowCollectionBehaviorMoveToActiveSpace |
+        NSWindowCollectionBehaviorFullScreenAuxiliary;
+    [[panel standardWindowButton:NSWindowMiniaturizeButton] setHidden:YES];
+    [[panel standardWindowButton:NSWindowZoomButton] setHidden:YES];
 
     NSVisualEffectView* background = [[NSVisualEffectView alloc] initWithFrame:contentRect];
-    background.translatesAutoresizingMaskIntoConstraints = NO;
-    background.material = NSVisualEffectMaterialHUDWindow;
+    background.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
+    background.material = NSVisualEffectMaterialContentBackground;
     background.blendingMode = NSVisualEffectBlendingModeBehindWindow;
     background.state = NSVisualEffectStateActive;
-    background.wantsLayer = YES;
-    background.layer.cornerRadius = 8.0;
-    background.layer.masksToBounds = YES;
 
-    NSStackView* content = [[NSStackView alloc] initWithFrame:NSZeroRect];
-    content.translatesAutoresizingMaskIntoConstraints = NO;
-    content.orientation = NSUserInterfaceLayoutOrientationVertical;
-    content.alignment = NSLayoutAttributeLeading;
-    content.spacing = 10.0;
+    NSUInteger mappingCount = 0;
+    for (BanshMappingSection* section in BanshMappingCatalog()) {
+        mappingCount += section.items.count;
+    }
 
-    NSTextField* title = [self cheatSheetLabel:@"Bansh mappings"
-                                          font:[NSFont systemFontOfSize:13.0 weight:NSFontWeightSemibold]
-                                         color:[NSColor labelColor]];
-    [content addArrangedSubview:title];
+    NSString* summary = [NSString stringWithFormat:
+        @"%lu input forms. Letters are case-aware; O and U follow vowel harmony. "
+         "Press Control+/ again or Esc to close.",
+        static_cast<unsigned long>(mappingCount)];
+    NSTextField* summaryLabel = [NSTextField wrappingLabelWithString:summary];
+    summaryLabel.frame = NSMakeRect(14.0, 450.0, 532.0, 38.0);
+    summaryLabel.font = [NSFont systemFontOfSize:12.0];
+    summaryLabel.textColor = [NSColor secondaryLabelColor];
+    [background addSubview:summaryLabel];
 
-    [content addArrangedSubview:[self cheatSheetSectionWithTitle:@"Vowels"
-                                                            rows:@[
-                                                                @[ @"a", @"а", @"e", @"э", @"i", @"и" ],
-                                                                @[ @"o", @"о", @"u", @"у", @"q", @"ө" ],
-                                                                @[ @"ya", @"я", @"ye", @"е", @"yo", @"ё" ],
-                                                                @[ @"yu", @"ю", @"w", @"ү", @"y", @"ы" ],
-                                                            ]]];
+    NSScrollView* scrollView = [[NSScrollView alloc] initWithFrame:NSMakeRect(14.0, 14.0, 532.0, 426.0)];
+    scrollView.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
+    scrollView.hasVerticalScroller = YES;
+    scrollView.autohidesScrollers = YES;
+    scrollView.drawsBackground = NO;
+    scrollView.borderType = NSNoBorder;
+    scrollView.verticalLineScroll = 24.0;
 
-    [content addArrangedSubview:[self cheatSheetSectionWithTitle:@"Consonants"
-                                                            rows:@[
-                                                                @[ @"b", @"б", @"p", @"п", @"m", @"м" ],
-                                                                @[ @"d", @"д", @"t", @"т", @"n", @"н" ],
-                                                                @[ @"g", @"г", @"k", @"к", @"kh", @"х" ],
-                                                                @[ @"l", @"л", @"r", @"р", @"s", @"с" ],
-                                                            ]]];
+    NSStackView* mappingContent = [[NSStackView alloc] initWithFrame:NSMakeRect(0.0, 0.0, 510.0, 1.0)];
+    mappingContent.orientation = NSUserInterfaceLayoutOrientationVertical;
+    mappingContent.alignment = NSLayoutAttributeLeading;
+    mappingContent.spacing = 14.0;
+    mappingContent.edgeInsets = NSEdgeInsetsMake(8.0, 4.0, 12.0, 4.0);
 
-    [content addArrangedSubview:[self cheatSheetSectionWithTitle:@"Combinations"
-                                                            rows:@[
-                                                                @[ @"sh", @"ш", @"ch", @"ч", @"c", @"ц" ],
-                                                                @[ @"j", @"ж", @"z", @"з", @"f", @"ф" ],
-                                                                @[ @"'", @"ь", @"\"", @"ъ", @"v", @"в" ],
-                                                            ]]];
+    for (BanshMappingSection* section in BanshMappingCatalog()) {
+        [mappingContent addArrangedSubview:[self cheatSheetSection:section]];
+    }
 
-    [background addSubview:content];
-    [NSLayoutConstraint activateConstraints:@[
-        [content.leadingAnchor constraintEqualToAnchor:background.leadingAnchor constant:14.0],
-        [content.trailingAnchor constraintEqualToAnchor:background.trailingAnchor constant:-14.0],
-        [content.topAnchor constraintEqualToAnchor:background.topAnchor constant:12.0],
-        [content.bottomAnchor constraintLessThanOrEqualToAnchor:background.bottomAnchor constant:-12.0],
-    ]];
+    NSSize fittingSize = mappingContent.fittingSize;
+    mappingContent.frame = NSMakeRect(0.0, 0.0, 510.0, fittingSize.height);
+    scrollView.documentView = mappingContent;
+    [background addSubview:scrollView];
 
     panel.contentView = background;
     return panel;
@@ -391,17 +411,23 @@ BOOL isControlSlashShortcut(NSString* string, NSInteger keyCode, NSUInteger flag
 {
     NSPoint midpoint = NSMakePoint(NSMidX(rect), NSMidY(rect));
     for (NSScreen* candidate in [NSScreen screens]) {
-        if (NSPointInRect(midpoint, candidate.visibleFrame) ||
-            NSIntersectsRect(rect, candidate.visibleFrame)) {
+        if (NSPointInRect(midpoint, candidate.visibleFrame)) {
             return candidate;
         }
     }
+
+    for (NSScreen* candidate in [NSScreen screens]) {
+        if (NSIntersectsRect(rect, candidate.visibleFrame)) {
+            return candidate;
+        }
+    }
+
     return fallback ?: [NSScreen mainScreen];
 }
 
 - (NSRect)preferredCheatSheetFrameForClient:(id<IMKTextInput, NSObject>)client panelSize:(NSSize)panelSize
 {
-    NSScreen* screen = [NSScreen mainScreen];
+    NSScreen* screen = [NSScreen mainScreen] ?: [NSScreen screens].firstObject;
     NSRect caretRect = NSZeroRect;
 
     if (client != nil) {
@@ -426,6 +452,10 @@ BOOL isControlSlashShortcut(NSString* string, NSInteger keyCode, NSUInteger flag
         x = MIN(MAX(x, NSMinX(visibleFrame) + 12.0), NSMaxX(visibleFrame) - panelSize.width - 12.0);
         y = MIN(MAX(y, NSMinY(visibleFrame) + 12.0), NSMaxY(visibleFrame) - panelSize.height - 12.0);
         return NSMakeRect(x, y, panelSize.width, panelSize.height);
+    }
+
+    if (screen == nil) {
+        return NSMakeRect(100.0, 100.0, panelSize.width, panelSize.height);
     }
 
     NSRect visibleFrame = screen.visibleFrame;

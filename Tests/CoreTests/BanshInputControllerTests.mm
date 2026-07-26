@@ -3,12 +3,14 @@
 #import <Carbon/Carbon.h>
 
 #import "BanshInputController.h"
+#import "BanshMappingCatalog.h"
 #import "BanshUpdateChecker.h"
 
 @interface BanshFakeTextClient : NSObject <IMKTextInput>
 @property(nonatomic, strong) NSMutableString* text;
 @property(nonatomic) NSRange selectedRangeValue;
 @property(nonatomic) NSRange markedRangeValue;
+@property(nonatomic) NSRect characterRectValue;
 @end
 
 @implementation BanshFakeTextClient
@@ -20,6 +22,7 @@
         _text = [NSMutableString string];
         _selectedRangeValue = NSMakeRange(0, 0);
         _markedRangeValue = NSMakeRange(NSNotFound, NSNotFound);
+        _characterRectValue = NSZeroRect;
     }
     return self;
 }
@@ -42,6 +45,20 @@ static NSArray<NSString*>* BanshTextValuesInView(NSView* view)
         [values addObjectsFromArray:BanshTextValuesInView(subview)];
     }
     return values;
+}
+
+static NSScrollView* BanshFirstScrollViewInView(NSView* view)
+{
+    if ([view isKindOfClass:[NSScrollView class]]) {
+        return (NSScrollView*)view;
+    }
+    for (NSView* subview in view.subviews) {
+        NSScrollView* scrollView = BanshFirstScrollViewInView(subview);
+        if (scrollView != nil) {
+            return scrollView;
+        }
+    }
+    return nil;
 }
 
 - (NSRange)clampedRange:(NSRange)range
@@ -184,7 +201,7 @@ static NSArray<NSString*>* BanshTextValuesInView(NSView* view)
     if (actualRange != nullptr) {
         *actualRange = [self clampedRange:range];
     }
-    return NSZeroRect;
+    return _characterRectValue;
 }
 
 @end
@@ -195,6 +212,10 @@ static NSArray<NSString*>* BanshTextValuesInView(NSView* view)
 @interface BanshUpdateChecker (BanshTests)
 - (void)finishCheckWithRelease:(NSDictionary*)release currentVersion:(NSString*)currentVersion;
 - (void)remindLater:(id)sender;
+@end
+
+@interface BanshInputController (BanshTests)
+- (NSRect)preferredCheatSheetFrameForClient:(id<IMKTextInput, NSObject>)client panelSize:(NSSize)panelSize;
 @end
 
 @implementation BanshInputControllerTests
@@ -319,6 +340,63 @@ static NSArray<NSString*>* BanshTextValuesInView(NSView* view)
     XCTAssertEqualObjects(client.text, @"");
 }
 
+- (void)testLiteralControlSlashOpensAndTogglesTheNativePanel
+{
+    BanshInputController* controller = [BanshInputController new];
+    BanshFakeTextClient* client = [BanshFakeTextClient new];
+
+    XCTAssertTrue([controller inputText:@"/"
+                                    key:kVK_ANSI_Slash
+                              modifiers:NSEventModifierFlagControl
+                                 client:client]);
+
+    NSPanel* panel = [controller valueForKey:@"cheatSheetPanel_"];
+    XCTAssertNotNil(panel);
+    XCTAssertTrue(panel.visible);
+    XCTAssertEqualObjects(panel.title, @"Bansh Mappings");
+    XCTAssertNotEqual(panel.styleMask & NSWindowStyleMaskTitled, 0U);
+    XCTAssertNotEqual(panel.styleMask & NSWindowStyleMaskClosable, 0U);
+    XCTAssertNotEqual(panel.styleMask & NSWindowStyleMaskUtilityWindow, 0U);
+    XCTAssertNotEqual(panel.styleMask & NSWindowStyleMaskNonactivatingPanel, 0U);
+    XCTAssertFalse(panel.hidesOnDeactivate);
+    XCTAssertNotEqual(panel.collectionBehavior & NSWindowCollectionBehaviorFullScreenAuxiliary, 0U);
+    XCTAssertNotNil([panel standardWindowButton:NSWindowCloseButton]);
+
+    NSScrollView* scrollView = BanshFirstScrollViewInView(panel.contentView);
+    XCTAssertNotNil(scrollView);
+    XCTAssertTrue(scrollView.hasVerticalScroller);
+    XCTAssertGreaterThan(NSHeight(scrollView.documentView.frame), NSHeight(scrollView.contentView.bounds));
+
+    [panel performClose:nil];
+    XCTAssertFalse(panel.visible);
+
+    XCTAssertTrue([controller inputText:@"/"
+                                    key:kVK_ANSI_Slash
+                              modifiers:NSEventModifierFlagControl
+                                 client:client]);
+    XCTAssertTrue(panel.visible);
+
+    XCTAssertTrue([controller inputText:@"/"
+                                    key:kVK_ANSI_Slash
+                              modifiers:NSEventModifierFlagControl
+                                 client:client]);
+    XCTAssertFalse(panel.visible);
+}
+
+- (void)testControlSlashRejectsAdditionalModifiers
+{
+    BanshInputController* controller = [BanshInputController new];
+    BanshFakeTextClient* client = [BanshFakeTextClient new];
+
+    const BOOL handled = [controller inputText:@"/"
+                                          key:kVK_ANSI_Slash
+                                    modifiers:NSEventModifierFlagControl | NSEventModifierFlagShift
+                                       client:client];
+
+    XCTAssertFalse(handled);
+    XCTAssertNil([controller valueForKey:@"cheatSheetPanel_"]);
+}
+
 - (void)testControlSlashShortcutAcceptsKeybindingInputPath
 {
     BanshInputController* controller = [BanshInputController new];
@@ -331,45 +409,92 @@ static NSArray<NSString*>* BanshTextValuesInView(NSView* view)
     XCTAssertEqualObjects(client.text, @"");
 }
 
+- (void)testEscapeAndDeactivationDismissThePanel
+{
+    BanshInputController* controller = [BanshInputController new];
+    BanshFakeTextClient* client = [BanshFakeTextClient new];
+    NSString* controlSlash = [NSString stringWithFormat:@"%C", static_cast<unichar>(0x1F)];
+
+    XCTAssertTrue([controller inputText:controlSlash client:client]);
+    NSPanel* panel = [controller valueForKey:@"cheatSheetPanel_"];
+    XCTAssertTrue(panel.visible);
+    XCTAssertTrue([controller didCommandBySelector:@selector(cancelOperation:) client:client]);
+    XCTAssertFalse(panel.visible);
+
+    XCTAssertTrue([controller inputText:controlSlash client:client]);
+    XCTAssertTrue(panel.visible);
+    [controller deactivateServer:client];
+    XCTAssertFalse(panel.visible);
+}
+
+- (void)testCheatSheetPositionStaysInsideTheVisibleScreen
+{
+    NSScreen* screen = NSScreen.mainScreen ?: NSScreen.screens.firstObject;
+    if (screen == nil) {
+        return;
+    }
+
+    BanshInputController* controller = [BanshInputController new];
+    BanshFakeTextClient* client = [BanshFakeTextClient new];
+    NSRect visibleFrame = screen.visibleFrame;
+    client.characterRectValue = NSMakeRect(NSMaxX(visibleFrame) - 1.0,
+                                           NSMinY(visibleFrame) + 1.0,
+                                           1.0,
+                                           20.0);
+    const NSSize panelSize = NSMakeSize(560.0, MIN(500.0, NSHeight(visibleFrame) - 24.0));
+
+    NSRect frame = [controller preferredCheatSheetFrameForClient:client panelSize:panelSize];
+
+    XCTAssertGreaterThanOrEqual(NSMinX(frame), NSMinX(visibleFrame) + 12.0);
+    XCTAssertLessThanOrEqual(NSMaxX(frame), NSMaxX(visibleFrame) - 12.0);
+    XCTAssertGreaterThanOrEqual(NSMinY(frame), NSMinY(visibleFrame) + 12.0);
+    XCTAssertLessThanOrEqual(NSMaxY(frame), NSMaxY(visibleFrame) - 12.0);
+}
+
 - (void)testCheatSheetMappingsMatchTheEngine
 {
     BanshInputController* controller = [BanshInputController new];
     BanshFakeTextClient* client = [BanshFakeTextClient new];
     NSString* controlSlash = [NSString stringWithFormat:@"%C", static_cast<unichar>(0x1F)];
-    NSDictionary<NSString*, NSString*>* mappings = @{
-        @"a" : @"а", @"e" : @"э", @"i" : @"и",
-        @"o" : @"о", @"u" : @"у", @"q" : @"ө",
-        @"ya" : @"я", @"ye" : @"е", @"yo" : @"ё",
-        @"yu" : @"ю", @"w" : @"ү", @"y" : @"ы",
-        @"b" : @"б", @"p" : @"п", @"m" : @"м",
-        @"d" : @"д", @"t" : @"т", @"n" : @"н",
-        @"g" : @"г", @"k" : @"к", @"kh" : @"х",
-        @"l" : @"л", @"r" : @"р", @"s" : @"с",
-        @"sh" : @"ш", @"ch" : @"ч", @"c" : @"ц",
-        @"j" : @"ж", @"z" : @"з", @"f" : @"ф",
-        @"'" : @"ь", @"\"" : @"ъ", @"v" : @"в",
-    };
 
     XCTAssertTrue([controller inputText:controlSlash client:client]);
 
     NSPanel* panel = [controller valueForKey:@"cheatSheetPanel_"];
     XCTAssertNotNil(panel);
     NSArray<NSString*>* labels = BanshTextValuesInView(panel.contentView);
+    NSMutableSet<NSString*>* expectedLabels = [NSMutableSet set];
+    NSUInteger mappingCount = 0;
 
-    for (NSString* input in mappings) {
-        NSString* output = mappings[input];
-        NSString* label = [NSString stringWithFormat:@"%@ -> %@", input, output];
-        XCTAssertTrue([labels containsObject:label], @"Cheat sheet is missing %@", label);
+    for (BanshMappingSection* section in BanshMappingCatalog()) {
+        XCTAssertTrue([labels containsObject:section.title], @"Cheat sheet is missing section %@", section.title);
+        for (BanshMappingItem* mapping in section.items) {
+            ++mappingCount;
+            NSString* label = BanshMappingLabel(mapping);
+            [expectedLabels addObject:label];
+            XCTAssertTrue([labels containsObject:label], @"Cheat sheet is missing %@", label);
 
-        BanshInputController* mappingController = [BanshInputController new];
-        BanshFakeTextClient* mappingClient = [BanshFakeTextClient new];
-        [self typeASCII:input controller:mappingController client:mappingClient];
-        XCTAssertEqualObjects(mappingClient.text, output, @"Cheat sheet mapping %@ does not match the engine", label);
+            XCTAssertGreaterThan(mapping.validationExamples.count, 0U);
+            for (BanshMappingExample* example in mapping.validationExamples) {
+                BanshInputController* mappingController = [BanshInputController new];
+                BanshFakeTextClient* mappingClient = [BanshFakeTextClient new];
+                [self typeASCII:example.input controller:mappingController client:mappingClient];
+                XCTAssertEqualObjects(mappingClient.text,
+                                      example.output,
+                                      @"Cheat sheet mapping %@ failed for input %@",
+                                      label,
+                                      example.input);
+            }
+        }
     }
 
-    XCTAssertFalse([labels containsObject:@"v -> ү"]);
-    XCTAssertFalse([labels containsObject:@"yi -> й"]);
-    XCTAssertFalse([labels containsObject:@"ts -> ц"]);
+    NSPredicate* mappingPredicate = [NSPredicate predicateWithBlock:^BOOL(NSString* value, NSDictionary* bindings) {
+        return [value containsString:@"→"];
+    }];
+    NSArray<NSString*>* displayedMappings = [labels filteredArrayUsingPredicate:mappingPredicate];
+    XCTAssertEqual(mappingCount, 62U);
+    XCTAssertEqual(expectedLabels.count, mappingCount);
+    XCTAssertEqual(displayedMappings.count, mappingCount);
+    XCTAssertTrue([labels containsObject:@"62 input forms. Letters are case-aware; O and U follow vowel harmony. Press Control+/ again or Esc to close."]);
     [panel orderOut:nil];
 }
 

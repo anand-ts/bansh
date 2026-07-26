@@ -41,6 +41,12 @@ Bansh 0.1.3 checks GitHub for a newer release at most once per day. When an upda
 
 Versions older than 0.1.3 do not contain the updater, so they must be updated manually once using the download link above.
 
+## Mapping reference
+
+While Bansh is selected, press <kbd>Control</kbd> + <kbd>/</kbd> to open the native mapping window. It contains all 62 input forms, including vowel-harmony and forced-vowel forms, in a scrollable reference that stays with the active editing space without taking typing focus.
+
+Press <kbd>Control</kbd> + <kbd>/</kbd> again, press <kbd>Esc</kbd>, or use the window's close button to dismiss it.
+
 ## Layout
 
 - `Sources/Core/`: transliteration engine

@@ -27,6 +27,8 @@
 		A10000000000000000000056 /* BanshUpdateChecker.mm in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000005A /* BanshUpdateChecker.mm */; };
 		A10000000000000000000057 /* BanshUpdateChecker.mm in Sources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000005A /* BanshUpdateChecker.mm */; };
 		A10000000000000000000058 /* BanshAppIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = A1000000000000000000005B /* BanshAppIcon.icns */; };
+		A1000000000000000000005E /* BanshMappingCatalog.mm in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000061 /* BanshMappingCatalog.mm */; };
+		A1000000000000000000005F /* BanshMappingCatalog.mm in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000061 /* BanshMappingCatalog.mm */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -61,6 +63,8 @@
 		A1000000000000000000005A /* BanshUpdateChecker.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = BanshUpdateChecker.mm; sourceTree = "<group>"; };
 		A1000000000000000000005B /* BanshAppIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = BanshAppIcon.icns; sourceTree = "<group>"; };
 		A1000000000000000000005C /* BanshAppIcon-1024.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "BanshAppIcon-1024.png"; sourceTree = "<group>"; };
+		A10000000000000000000060 /* BanshMappingCatalog.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BanshMappingCatalog.h; sourceTree = "<group>"; };
+		A10000000000000000000061 /* BanshMappingCatalog.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = BanshMappingCatalog.mm; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -144,6 +148,8 @@
 				A10000000000000000000014 /* BanshAppDelegate.h */,
 				A10000000000000000000010 /* BanshAppDelegate.mm */,
 				A1000000000000000000005B /* BanshAppIcon.icns */,
+				A10000000000000000000060 /* BanshMappingCatalog.h */,
+				A10000000000000000000061 /* BanshMappingCatalog.mm */,
 				A10000000000000000000015 /* BanshInputController.h */,
 				A10000000000000000000011 /* BanshInputController.mm */,
 				A10000000000000000000059 /* BanshUpdateChecker.h */,
@@ -299,6 +305,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A10000000000000000000019 /* TransliterationSession.cpp in Sources */,
+				A1000000000000000000005E /* BanshMappingCatalog.mm in Sources */,
 				A10000000000000000000018 /* BanshInputController.mm in Sources */,
 				A10000000000000000000056 /* BanshUpdateChecker.mm in Sources */,
 				A10000000000000000000017 /* BanshAppDelegate.mm in Sources */,
@@ -311,6 +318,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A10000000000000000000036 /* TransliterationSession.cpp in Sources */,
+				A1000000000000000000005F /* BanshMappingCatalog.mm in Sources */,
 				A10000000000000000000051 /* BanshInputController.mm in Sources */,
 				A10000000000000000000057 /* BanshUpdateChecker.mm in Sources */,
 				A10000000000000000000035 /* BanshCoreTests.mm in Sources */,

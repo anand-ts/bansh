@@ -44,6 +44,7 @@ targets:
           - TransliterationSession.cpp
       - path: Sources/InputMethod
         includes:
+          - BanshMappingCatalog.mm
           - BanshInputController.mm
           - BanshUpdateChecker.mm
       - path: Tests/CoreTests

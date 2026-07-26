@@ -6,7 +6,9 @@ Current contents:
 
 - `main.mm` boots the input method server
 - `BanshInputController.mm` bridges macOS text input events to the core engine
+- `BanshMappingCatalog.mm` provides the mapping reference displayed by the native help panel
 - `BanshAppDelegate.mm` creates and holds the `IMKServer`
-- `Info.plist` and `BanshInputMethodIcon.tiff` define bundle metadata and icon assets
+- `Info.plist` defines the bundle metadata
+- `BanshAppIcon.icns` is the application icon; `BanshInputMethodIcon.tiff` is the monochrome input-source menu icon
 
 The implementation should stay thin and delegate composition behavior to `Sources/Core/`.
