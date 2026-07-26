@@ -3,6 +3,7 @@
 #import <Carbon/Carbon.h>
 
 #import "BanshInputController.h"
+#import "BanshUpdateChecker.h"
 
 @interface BanshFakeTextClient : NSObject <IMKTextInput>
 @property(nonatomic, strong) NSMutableString* text;
@@ -191,7 +192,71 @@ static NSArray<NSString*>* BanshTextValuesInView(NSView* view)
 @interface BanshInputControllerTests : XCTestCase
 @end
 
+@interface BanshUpdateChecker (BanshTests)
+- (void)finishCheckWithRelease:(NSDictionary*)release currentVersion:(NSString*)currentVersion;
+- (void)remindLater:(id)sender;
+@end
+
 @implementation BanshInputControllerTests
+
+- (void)testUpdateVersionComparison
+{
+    XCTAssertTrue(BanshVersionIsNewer(@"v0.1.3", @"0.1.2"));
+    XCTAssertTrue(BanshVersionIsNewer(@"0.2.0", @"0.1.99"));
+    XCTAssertTrue(BanshVersionIsNewer(@"1.0.10", @"1.0.9"));
+    XCTAssertFalse(BanshVersionIsNewer(@"0.1.3", @"0.1.3"));
+    XCTAssertFalse(BanshVersionIsNewer(@"0.1.2", @"0.1.3"));
+    XCTAssertFalse(BanshVersionIsNewer(@"not-a-version", @"0.1.3"));
+}
+
+- (void)testUpdateCheckScheduleHonorsDailyLimitAndReminder
+{
+    NSDate* now = [NSDate dateWithTimeIntervalSinceReferenceDate:1'000'000.0];
+    NSDate* twentyThreeHoursAgo = [now dateByAddingTimeInterval:-(23.0 * 60.0 * 60.0)];
+    NSDate* twentyFiveHoursAgo = [now dateByAddingTimeInterval:-(25.0 * 60.0 * 60.0)];
+    NSDate* futureReminder = [now dateByAddingTimeInterval:60.0];
+    NSDate* expiredReminder = [now dateByAddingTimeInterval:-60.0];
+    NSDate* futureLastCheck = [now dateByAddingTimeInterval:60.0];
+
+    XCTAssertFalse(BanshShouldCheckForUpdates(now, twentyThreeHoursAgo, nil));
+    XCTAssertTrue(BanshShouldCheckForUpdates(now, twentyFiveHoursAgo, nil));
+    XCTAssertFalse(BanshShouldCheckForUpdates(now, twentyFiveHoursAgo, futureReminder));
+    XCTAssertTrue(BanshShouldCheckForUpdates(now, twentyFiveHoursAgo, expiredReminder));
+    XCTAssertTrue(BanshShouldCheckForUpdates(now, futureLastCheck, nil));
+}
+
+- (void)testUpdateReleaseCreatesANonactivatingPrompt
+{
+    BanshUpdateChecker* checker = [BanshUpdateChecker new];
+    NSDictionary* release = @{
+        @"tag_name" : @"v0.1.4",
+        @"assets" : @[
+            @{
+                @"name" : @"Bansh-direct-download.zip",
+                @"browser_download_url" : @"https://github.com/anand-ts/bansh/releases/download/v0.1.4/Bansh-direct-download.zip",
+            },
+        ],
+    };
+
+    [checker finishCheckWithRelease:release currentVersion:@"0.1.3"];
+
+    NSPanel* panel = [checker valueForKey:@"updatePanel"];
+    XCTAssertNotNil(panel);
+    XCTAssertNotEqual(panel.styleMask & NSWindowStyleMaskNonactivatingPanel, 0U);
+
+    NSMutableSet<NSString*>* buttonTitles = [NSMutableSet set];
+    for (NSView* subview in panel.contentView.subviews) {
+        if ([subview isKindOfClass:NSButton.class]) {
+            [buttonTitles addObject:[(NSButton*)subview title]];
+        }
+    }
+    XCTAssertTrue([buttonTitles containsObject:@"Download Update"]);
+    XCTAssertTrue([buttonTitles containsObject:@"Remind Me Later"]);
+
+    [checker remindLater:nil];
+    XCTAssertNil([checker valueForKey:@"updatePanel"]);
+    [NSUserDefaults.standardUserDefaults removeObjectForKey:@"BanshUpdateSnoozeUntilDate"];
+}
 
 - (void)typeASCII:(NSString*)text controller:(BanshInputController*)controller client:(BanshFakeTextClient*)client
 {

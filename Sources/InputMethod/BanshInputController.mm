@@ -1,4 +1,5 @@
 #import "BanshInputController.h"
+#import "BanshUpdateChecker.h"
 
 #import <Carbon/Carbon.h>
 #import <Cocoa/Cocoa.h>
@@ -211,6 +212,7 @@ BOOL isControlSlashShortcut(NSString* string, NSInteger keyCode, NSUInteger flag
 
 - (void)activateServer:(id)sender
 {
+    [[BanshUpdateChecker sharedChecker] checkForUpdatesIfNeeded];
 }
 
 - (void)deactivateServer:(id)sender

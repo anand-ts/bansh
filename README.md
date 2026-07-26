@@ -1,7 +1,5 @@
 <p align="center">
-  <a href="https://www.flaticon.com/free-icon/dumpling_9361828?term=dumpling&page=1&position=29&origin=tag&related_id=9361828">
-    <img src="https://cdn-icons-png.flaticon.com/512/9361/9361828.png" alt="Bansh dumpling icon" width="96" height="96">
-  </a>
+  <img src="Sources/InputMethod/Brand/BanshAppIcon-1024.png" alt="Bansh dumpling icon" width="112" height="112">
 </p>
 
 # Bansh (Банш)
@@ -37,6 +35,12 @@ Then open `Install Bansh.command` again.
 
 To uninstall Bansh, double-click `Uninstall Bansh.command` from the extracted folder.
 
+### Updates
+
+Bansh 0.1.3 checks GitHub for a newer release at most once per day. When an update is available, choose **Download Update** or **Remind Me Later** to be asked again in seven days. Bansh does not add a device identifier or custom analytics to this request.
+
+Versions older than 0.1.3 do not contain the updater, so they must be updated manually once using the download link above.
+
 ## Layout
 
 - `Sources/Core/`: transliteration engine
@@ -45,6 +49,8 @@ To uninstall Bansh, double-click `Uninstall Bansh.command` from the extracted fo
 - `scripts/`: build, install, debug, package, and uninstall helpers
 - `docs/`: transliteration reference docs
 - `Packaging/`: release packaging notes and helper sources
+
+See [CHANGELOG.md](CHANGELOG.md) for release changes.
 
 ## Commands
 

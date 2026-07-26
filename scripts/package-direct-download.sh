@@ -108,6 +108,8 @@ SUPPORT_DIR="$SCRIPT_DIR/.support"
 REGISTER_BINARY="$SUPPORT_DIR/register-input-source"
 INSTALL_DIR="/Library/Input Methods"
 INSTALLED_APP="$INSTALL_DIR/$APP_NAME"
+USER_INSTALL_DIR="$HOME/Library/Input Methods"
+USER_INSTALLED_APP="$USER_INSTALL_DIR/$APP_NAME"
 DRY_RUN=0
 
 plist_string()
@@ -120,6 +122,12 @@ plist_array_value()
 {
   local key_path="$1"
   /usr/libexec/PlistBuddy -c "Print :$key_path" "$APP_PATH/Contents/Info.plist" 2>/dev/null || true
+}
+
+bundle_identifier_for_app()
+{
+  local app_path="$1"
+  /usr/bin/plutil -extract CFBundleIdentifier raw -o - "$app_path/Contents/Info.plist" 2>/dev/null || true
 }
 
 print_command()
@@ -164,6 +172,25 @@ restart_input_services()
   fi
 }
 
+remove_legacy_user_install()
+{
+  if [[ ! -d "$USER_INSTALLED_APP" ]]; then
+    return
+  fi
+
+  local installed_bundle_id
+  installed_bundle_id="$(bundle_identifier_for_app "$USER_INSTALLED_APP")"
+  case "$installed_bundle_id" in
+    com.bansh.inputmethod|com.bansh.inputmethod.bansh)
+      echo "Removing the older per-user Bansh install from $USER_INSTALL_DIR."
+      run_or_print /bin/rm -rf "$USER_INSTALLED_APP"
+      ;;
+    *)
+      echo "Leaving $USER_INSTALLED_APP in place because its bundle identifier is not recognized." >&2
+      ;;
+  esac
+}
+
 if [[ "${1:-}" == "--dry-run" ]]; then
   DRY_RUN=1
 fi
@@ -198,6 +225,7 @@ fi
 echo "Preparing Bansh for install."
 run_or_print /usr/bin/xattr -cr "$SCRIPT_DIR"
 run_or_print /usr/bin/xattr -cr "$APP_PATH"
+remove_legacy_user_install
 
 echo "Installing Bansh into $INSTALL_DIR."
 echo "macOS will ask for your administrator password."
@@ -234,11 +262,13 @@ cat >"$UNINSTALL_SCRIPT_PATH" <<'EOF'
 set -euo pipefail
 
 APP_PATH="/Library/Input Methods/BanshInputMethod.app"
+USER_APP_PATH="$HOME/Library/Input Methods/BanshInputMethod.app"
 
-echo "Removing Bansh from /Library/Input Methods."
+echo "Removing Bansh from system and per-user Input Methods folders."
 echo "macOS may ask for your administrator password."
 
 /usr/bin/sudo /bin/rm -rf "$APP_PATH"
+/bin/rm -rf "$USER_APP_PATH"
 
 for process_name in BanshInputMethod TextInputMenuAgent TextInputSwitcher; do
   /usr/bin/killall "$process_name" >/dev/null 2>&1 || true
@@ -273,8 +303,10 @@ Notes
 -----
 - This direct-download build is not App Store or notarized distribution.
 - The installer clears quarantine attributes from the copied app as part of the install.
+- The installer removes older per-user Bansh installs before installing the current system-wide copy.
+- Bansh checks GitHub for a newer release at most once per day and can remind you again in seven days.
 - If Bansh still does not appear right away, sign out and sign back in once.
-- "Uninstall Bansh.command" removes the input method from /Library/Input Methods.
+- "Uninstall Bansh.command" removes system-wide and older per-user copies of the input method.
 EOF
 
 /bin/chmod +x "$INSTALL_SCRIPT_PATH" "$UNINSTALL_SCRIPT_PATH"
