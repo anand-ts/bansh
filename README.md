@@ -1,5 +1,7 @@
 <p align="center">
-  <img src="Sources/InputMethod/Brand/BanshAppIcon-1024.png" alt="Bansh dumpling icon" width="112" height="112">
+  <a href="https://www.flaticon.com/free-icon/dumpling_9361828?term=dumpling&page=1&position=29&origin=tag&related_id=9361828">
+    <img src="https://cdn-icons-png.flaticon.com/512/9361/9361828.png" alt="Bansh dumpling icon" width="96" height="96">
+  </a>
 </p>
 
 # Bansh (Банш)
