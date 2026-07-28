@@ -37,7 +37,7 @@ To uninstall Bansh, double-click `Uninstall Bansh.command` from the extracted fo
 
 ### Updates
 
-Bansh 0.1.3 checks GitHub for a newer release at most once per day. When an update is available, choose **Download Update** or **Remind Me Later** to be asked again in seven days. Bansh does not add a device identifier or custom analytics to this request.
+Bansh 0.1.3 and later check GitHub for a newer release at most once per day. When an update is available, choose **Download Update** or **Remind Me Later** to be asked again in seven days. Bansh does not add a device identifier or custom analytics to this request.
 
 Versions older than 0.1.3 do not contain the updater, so they must be updated manually once using the download link above.
 

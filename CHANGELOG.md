@@ -2,9 +2,13 @@
 
 ## Unreleased
 
+## 0.1.4 — 2026-07-28
+
 - Turned the <kbd>Control</kbd> + <kbd>/</kbd> mapping reference into a native, scrollable macOS utility panel.
 - Expanded the reference to all 62 user-facing mappings, including vowel harmony, forced vowels, and quote forms.
 - Added regression coverage for both macOS shortcut event paths, toggling, Escape and deactivation dismissal, screen-bound positioning, and every displayed mapping.
+- Replaced the application and README artwork with the approved classic bansh icon and retained editable vector sources.
+- Added a matching monochrome, Retina-ready template icon for the macOS input-source menu and menu bar.
 
 ## 0.1.3 — 2026-07-26
 
