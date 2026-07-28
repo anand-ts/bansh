@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title description">
+  <title id="title">Classic bansh icon</title>
+  <desc id="description">A wide half-moon bansh with small pinches along its sealed edge.</desc>
+  <defs>
+    <linearGradient id="silver" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.45" stop-color="#dedede"/>
+      <stop offset="1" stop-color="#969696"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" fill="#ffffff"/>
+  <rect x="58" y="58" width="908" height="908" rx="206" fill="url(#silver)" stroke="#555555" stroke-width="16"/>
+  <path d="M176 626 C260 476 382 394 512 394 C642 394 764 476 848 626 C799 716 676 758 512 758 C348 758 225 716 176 626 Z"
+        fill="#fafafa" stroke="#111111" stroke-width="22" stroke-linejoin="round"/>
+  <path d="M222 616 C296 494 398 438 512 438 C626 438 728 494 802 616"
+        fill="none" stroke="#111111" stroke-width="17" stroke-linecap="round"/>
+  <g fill="none" stroke="#111111" stroke-width="15" stroke-linecap="round">
+    <path d="M285 544 L320 564"/>
+    <path d="M342 493 L373 519"/>
+    <path d="M407 458 L431 490"/>
+    <path d="M476 441 L488 476"/>
+    <path d="M548 441 L536 476"/>
+    <path d="M617 458 L593 490"/>
+    <path d="M682 493 L651 519"/>
+    <path d="M739 544 L704 564"/>
+  </g>
+</svg>

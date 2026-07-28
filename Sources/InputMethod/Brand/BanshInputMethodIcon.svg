@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title description">
+  <title id="title">Bansh input-source menu icon</title>
+  <desc id="description">A monochrome classic bansh mark for the macOS input menu.</desc>
+  <path d="M4 39 C11 24 21 17 32 17 C43 17 53 24 60 39 C55 48 45 52 32 52 C19 52 9 48 4 39 Z"
+        fill="none" stroke="#000000" stroke-width="5.5" stroke-linejoin="round"/>
+  <path d="M9 38 C15 27 23 22 32 22 C41 22 49 27 55 38"
+        fill="none" stroke="#000000" stroke-width="4.5" stroke-linecap="round"/>
+  <g fill="none" stroke="#000000" stroke-width="4" stroke-linecap="round">
+    <path d="M19 27 L22 31"/>
+    <path d="M26 23 L28 28"/>
+    <path d="M32 22 V27"/>
+    <path d="M38 23 L36 28"/>
+    <path d="M45 27 L42 31"/>
+  </g>
+</svg>

@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title description">
+  <title id="title">Classic bansh small icon</title>
+  <desc id="description">A simplified, heavier rendition of the classic bansh icon for small macOS icon sizes.</desc>
+  <defs>
+    <linearGradient id="silver" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.45" stop-color="#dedede"/>
+      <stop offset="1" stop-color="#969696"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" fill="#ffffff"/>
+  <rect x="52" y="52" width="920" height="920" rx="212" fill="url(#silver)" stroke="#555555" stroke-width="34"/>
+  <path d="M136 638 C240 450 374 354 512 354 C650 354 784 450 888 638 C824 746 688 796 512 796 C336 796 200 746 136 638 Z"
+        fill="#fafafa" stroke="#111111" stroke-width="54" stroke-linejoin="round"/>
+  <path d="M202 620 C282 482 390 414 512 414 C634 414 742 482 822 620"
+        fill="none" stroke="#111111" stroke-width="42" stroke-linecap="round"/>
+  <g fill="none" stroke="#111111" stroke-width="38" stroke-linecap="round">
+    <path d="M326 500 L366 536"/>
+    <path d="M418 435 L442 484"/>
+    <path d="M512 414 V470"/>
+    <path d="M606 435 L582 484"/>
+    <path d="M698 500 L658 536"/>
+  </g>
+</svg>
