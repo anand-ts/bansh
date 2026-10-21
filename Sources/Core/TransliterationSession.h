@@ -14,6 +14,7 @@ struct Snapshot {
     EngineString markedText;
     EngineString committedText;
     std::size_t cursor = 0;
+    std::size_t selectionLength = 0;
     bool isComposing = false;
     bool changed = false;
 };
@@ -27,6 +28,7 @@ public:
     Snapshot insert(char16_t scalar);
     Snapshot backspace();
     Snapshot deleteForward();
+    Snapshot setSelection(std::size_t location, std::size_t length = 0);
     Snapshot moveLeft();
     Snapshot moveRight();
     Snapshot moveHome();
@@ -39,11 +41,13 @@ public:
 private:
     void rebuildMarkedText();
     void copyMarkedTextToRawInput();
+    bool eraseSelection();
     Snapshot publish(bool changed, EngineString committedText = {});
 
     EngineString rawInput_;
     EngineString markedText_;
     std::size_t cursor_ = 0;
+    std::size_t selectionLength_ = 0;
     Snapshot snapshot_;
 };
 

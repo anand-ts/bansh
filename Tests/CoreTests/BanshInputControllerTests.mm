@@ -6,6 +6,19 @@
 #import "BanshMappingCatalog.h"
 #import "BanshUpdateChecker.h"
 
+@interface BanshNativeTextView : NSTextView
+- (void)setMarkedText:(id)string selectionRange:(NSRange)selectionRange replacementRange:(NSRange)replacementRange;
+@end
+
+@implementation BanshNativeTextView
+
+- (void)setMarkedText:(id)string selectionRange:(NSRange)selectionRange replacementRange:(NSRange)replacementRange
+{
+    [super setMarkedText:string selectedRange:selectionRange replacementRange:replacementRange];
+}
+
+@end
+
 @interface BanshFakeTextClient : NSObject <IMKTextInput>
 @property(nonatomic, strong) NSMutableString* text;
 @property(nonatomic) NSRange selectedRangeValue;
@@ -288,6 +301,110 @@ static NSScrollView* BanshFirstScrollViewInView(NSView* view)
     }
 }
 
+- (void)testClientCaretChangesAreRespectedDuringComposition
+{
+    BanshInputController* controller = [BanshInputController new];
+    BanshFakeTextClient* client = [BanshFakeTextClient new];
+    [client insertText:@"prefix " replacementRange:NSMakeRange(NSNotFound, NSNotFound)];
+    [self typeASCII:@"bansh" controller:controller client:client];
+
+    client.selectedRangeValue = NSMakeRange(8, 0);
+    [self typeASCII:@"z" controller:controller client:client];
+
+    XCTAssertEqualObjects(client.text, @"prefix бзанш");
+    XCTAssertTrue(NSEqualRanges(client.selectedRange, NSMakeRange(9, 0)));
+
+    client.selectedRangeValue = NSMakeRange(10, 0);
+    XCTAssertTrue([controller didCommandBySelector:@selector(deleteBackward:) client:client]);
+    XCTAssertEqualObjects(client.text, @"prefix бзнш");
+    XCTAssertTrue(NSEqualRanges(client.selectedRange, NSMakeRange(9, 0)));
+}
+
+- (void)testTypingAndDeletionReplaceTheClientSelection
+{
+    for (NSString* action in @[@"type", @"backspace", @"delete"]) {
+        BanshInputController* controller = [BanshInputController new];
+        BanshFakeTextClient* client = [BanshFakeTextClient new];
+        [self typeASCII:@"bansh" controller:controller client:client];
+        client.selectedRangeValue = NSMakeRange(1, 2);
+
+        if ([action isEqualToString:@"type"]) {
+            [self typeASCII:@"sh" controller:controller client:client];
+            XCTAssertEqualObjects(client.text, @"бшш");
+            XCTAssertTrue(NSEqualRanges(client.selectedRange, NSMakeRange(2, 0)));
+        } else {
+            SEL selector = [action isEqualToString:@"backspace"] ? @selector(deleteBackward:) : @selector(deleteForward:);
+            XCTAssertTrue([controller didCommandBySelector:selector client:client]);
+            XCTAssertEqualObjects(client.text, @"бш");
+            XCTAssertTrue(NSEqualRanges(client.selectedRange, NSMakeRange(1, 0)));
+        }
+    }
+}
+
+- (void)testSeparatorsAreInsertedAtTheCompositionCaret
+{
+    for (NSString* separator in @[@" ", @".", @"\n"]) {
+        BanshInputController* controller = [BanshInputController new];
+        BanshFakeTextClient* client = [BanshFakeTextClient new];
+        [self typeASCII:@"nom" controller:controller client:client];
+        XCTAssertTrue([controller didCommandBySelector:@selector(moveLeft:) client:client]);
+
+        BOOL handled = [separator isEqualToString:@"\n"]
+            ? [controller didCommandBySelector:@selector(insertNewline:) client:client]
+            : [controller inputText:separator key:0 modifiers:0 client:client];
+        if (!handled) {
+            [client insertText:separator replacementRange:NSMakeRange(NSNotFound, NSNotFound)];
+        }
+
+        XCTAssertEqualObjects(client.text, ([NSString stringWithFormat:@"но%@м", separator]));
+        XCTAssertTrue(NSEqualRanges(client.selectedRange, NSMakeRange(3, 0)));
+        XCTAssertEqual(client.markedRange.location, NSNotFound);
+
+        [self typeASCII:@"z" controller:controller client:client];
+        XCTAssertEqualObjects(client.text, ([NSString stringWithFormat:@"но%@зм", separator]));
+    }
+}
+
+- (void)testSeparatorsReplaceTheSelectedCompositionText
+{
+    for (NSString* separator in @[@" ", @".", @"\n"]) {
+        BanshInputController* controller = [BanshInputController new];
+        BanshFakeTextClient* client = [BanshFakeTextClient new];
+        [self typeASCII:@"nom" controller:controller client:client];
+        client.selectedRangeValue = NSMakeRange(1, 1);
+
+        BOOL handled = [separator isEqualToString:@"\n"]
+            ? [controller didCommandBySelector:@selector(insertNewline:) client:client]
+            : [controller inputText:separator key:0 modifiers:0 client:client];
+        if (!handled) {
+            [client insertText:separator replacementRange:NSMakeRange(NSNotFound, NSNotFound)];
+        }
+
+        XCTAssertEqualObjects(client.text, ([NSString stringWithFormat:@"н%@м", separator]));
+        XCTAssertTrue(NSEqualRanges(client.selectedRange, NSMakeRange(2, 0)));
+        XCTAssertEqual(client.markedRange.location, NSNotFound);
+    }
+}
+
+- (void)testNativeTextViewPreservesCaretAcrossCommit
+{
+    BanshInputController* controller = [BanshInputController new];
+    BanshNativeTextView* client = [[BanshNativeTextView alloc] initWithFrame:NSMakeRect(0, 0, 400, 200)];
+    for (NSString* character in @[@"n", @"o", @"m"]) {
+        XCTAssertTrue([controller inputText:character key:0 modifiers:0 client:client]);
+    }
+    [client setSelectedRange:NSMakeRange(2, 0)];
+
+    [controller commitComposition:client];
+    XCTAssertEqualObjects(client.string, @"ном");
+    XCTAssertTrue(NSEqualRanges(client.selectedRange, NSMakeRange(2, 0)));
+    XCTAssertFalse(client.hasMarkedText);
+    [client insertText:@" " replacementRange:NSMakeRange(NSNotFound, NSNotFound)];
+    XCTAssertEqualObjects(client.string, @"но м");
+    XCTAssertTrue([controller inputText:@"z" key:0 modifiers:0 client:client]);
+    XCTAssertEqualObjects(client.string, @"но зм");
+}
+
 - (void)testPunctuationCommitDoesNotLeaveEmptyMarkedRange
 {
     BanshInputController* controller = [BanshInputController new];
@@ -366,6 +483,11 @@ static NSScrollView* BanshFirstScrollViewInView(NSView* view)
     XCTAssertNotNil(scrollView);
     XCTAssertTrue(scrollView.hasVerticalScroller);
     XCTAssertGreaterThan(NSHeight(scrollView.documentView.frame), NSHeight(scrollView.contentView.bounds));
+    NSStackView* mappingContent = (NSStackView*)scrollView.documentView;
+    NSStackView* firstSection = (NSStackView*)mappingContent.arrangedSubviews.firstObject;
+    NSView* firstTitle = firstSection.arrangedSubviews.firstObject;
+    NSRect titleRect = [firstTitle convertRect:firstTitle.bounds toView:mappingContent];
+    XCTAssertTrue(NSContainsRect(scrollView.documentVisibleRect, titleRect), @"The first mapping section should be visible on opening.");
 
     [panel performClose:nil];
     XCTAssertFalse(panel.visible);
@@ -516,6 +638,40 @@ static NSScrollView* BanshFirstScrollViewInView(NSView* view)
     XCTAssertTrue([controller inputText:@" " key:0 modifiers:0 client:client]);
     XCTAssertEqualObjects(client.text, [committedPrefix stringByAppendingString:@"з "]);
     XCTAssertEqual([client markedRange].location, NSNotFound);
+}
+
+- (void)testCompositionLimitPreservesTheInsertionPoint
+{
+    BanshInputController* controller = [BanshInputController new];
+    BanshFakeTextClient* client = [BanshFakeTextClient new];
+    [self typeASCII:[@"" stringByPaddingToLength:50 withString:@"a" startingAtIndex:0]
+        controller:controller client:client];
+    client.selectedRangeValue = NSMakeRange(20, 0);
+
+    [self typeASCII:@"z" controller:controller client:client];
+
+    NSString* prefix = [@"" stringByPaddingToLength:20 withString:@"а" startingAtIndex:0];
+    NSString* suffix = [@"" stringByPaddingToLength:30 withString:@"а" startingAtIndex:0];
+    XCTAssertEqualObjects(client.text, ([NSString stringWithFormat:@"%@з%@", prefix, suffix]));
+    XCTAssertTrue(NSEqualRanges(client.selectedRange, NSMakeRange(21, 0)));
+    XCTAssertTrue(NSEqualRanges(client.markedRange, NSMakeRange(20, 1)));
+}
+
+- (void)testSelectionReplacementAtTheCompositionLimit
+{
+    BanshInputController* controller = [BanshInputController new];
+    BanshFakeTextClient* client = [BanshFakeTextClient new];
+    [self typeASCII:[@"" stringByPaddingToLength:50 withString:@"a" startingAtIndex:0]
+        controller:controller client:client];
+    client.selectedRangeValue = NSMakeRange(20, 2);
+
+    [self typeASCII:@"z" controller:controller client:client];
+
+    NSString* prefix = [@"" stringByPaddingToLength:20 withString:@"а" startingAtIndex:0];
+    NSString* suffix = [@"" stringByPaddingToLength:28 withString:@"а" startingAtIndex:0];
+    XCTAssertEqualObjects(client.text, ([NSString stringWithFormat:@"%@з%@", prefix, suffix]));
+    XCTAssertTrue(NSEqualRanges(client.selectedRange, NSMakeRange(21, 0)));
+    XCTAssertTrue(NSEqualRanges(client.markedRange, NSMakeRange(0, 49)));
 }
 
 @end

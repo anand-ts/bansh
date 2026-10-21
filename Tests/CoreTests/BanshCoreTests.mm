@@ -127,6 +127,33 @@ NSString* markedTextForAscii(std::string_view ascii)
     XCTAssertEqual(snapshot.cursor, static_cast<std::size_t>(2));
 }
 
+- (void)testNavigationPreservesVowelHarmony
+{
+    const struct {
+        const char* prefix;
+        NSString* expected;
+    } examples[] = {
+        { "ye", @"еөү" },
+        { "Ye", @"Еөү" },
+        { "eya", @"эяоу" },
+        { "eYA", @"эЯоу" },
+        { "eyo", @"эёоу" },
+        { "eYO", @"эЁоу" },
+        { "eyu", @"эюоу" },
+        { "eYU", @"эЮоу" },
+    };
+
+    for (const auto& example : examples) {
+        TransliterationSession session;
+        typeAscii(session, example.prefix);
+        session.moveLeft();
+        session.moveRight();
+        const Snapshot snapshot = typeAscii(session, "ou");
+        XCTAssertEqualObjects(NSStringFromEngineString(snapshot.markedText), example.expected,
+                              @"Harmony changed after navigating through %s", example.prefix);
+    }
+}
+
 - (void)testDoubleApostrophe
 {
     TransliterationSession session;

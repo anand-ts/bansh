@@ -117,4 +117,8 @@ These rules are present in the engine so an active composition can keep behaving
 | `ӨI` | `ӨЙ` | Sets feminine harmony |
 | `Ү` | `Ү` | Sets feminine harmony |
 | `ҮI` | `ҮЙ` | Sets feminine harmony |
+| `Е` | `Е` | Sets feminine harmony |
+| `Я` | `Я` | Sets masculine harmony |
+| `Ё` | `Ё` | Sets masculine harmony |
+| `Ю` | `Ю` | Sets masculine harmony |
 | `ИI` | `ИЙ` |  |

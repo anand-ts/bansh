@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Respect caret moves and selections inside a composition, including separator insertion and commits at the composition length limit.
+- Preserve vowel harmony after cursor navigation through converted Cyrillic text.
+- Open the mapping reference at its first section.
+
 ## 0.1.4 — 2026-07-28
 
 - Turned the <kbd>Control</kbd> + <kbd>/</kbd> mapping reference into a native, scrollable macOS utility panel.

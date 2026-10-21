@@ -166,6 +166,10 @@ RuleBook::RuleBook()
     add(u"\u04E8I", u"\u04E8\u0419", kMale | kFemale | kMakeFemale | kAllowCaseConversion);
     add(u"\u04AE", u"\u04AE", kMale | kFemale | kMakeFemale | kAllowCaseConversion);
     add(u"\u04AEI", u"\u04AE\u0419", kMale | kFemale | kMakeFemale | kAllowCaseConversion);
+    add(u"\u0415", u"\u0415", kMale | kFemale | kMakeFemale | kAllowCaseConversion);
+    add(u"\u042F", u"\u042F", kMale | kFemale | kMakeMale | kAllowCaseConversion);
+    add(u"\u0401", u"\u0401", kMale | kFemale | kMakeMale | kAllowCaseConversion);
+    add(u"\u042E", u"\u042E", kMale | kFemale | kMakeMale | kAllowCaseConversion);
 
     add(u"\u0418I", u"\u0418\u0419", kMale | kFemale | kAllowCaseConversion);
 
@@ -397,10 +401,11 @@ bool TransliterationSession::isInputCharacter(char16_t scalar)
 
 Snapshot TransliterationSession::insert(char16_t scalar)
 {
-    if (rawInput_.size() >= kMaxCompositionLength) {
+    if (rawInput_.size() - selectionLength_ >= kMaxCompositionLength) {
         return publish(false);
     }
 
+    eraseSelection();
     cursor_ = std::min(cursor_, markedText_.size());
     const std::size_t backCursorPos = markedText_.size() - cursor_;
     const std::size_t rawCursorPos = rawInput_.size() >= backCursorPos ? rawInput_.size() - backCursorPos : 0;
@@ -414,6 +419,10 @@ Snapshot TransliterationSession::insert(char16_t scalar)
 
 Snapshot TransliterationSession::backspace()
 {
+    if (eraseSelection()) {
+        return publish(true);
+    }
+
     if (rawInput_.empty()) {
         return publish(false);
     }
@@ -435,6 +444,10 @@ Snapshot TransliterationSession::backspace()
 
 Snapshot TransliterationSession::deleteForward()
 {
+    if (eraseSelection()) {
+        return publish(true);
+    }
+
     if (rawInput_.empty()) {
         return publish(false);
     }
@@ -454,48 +467,38 @@ Snapshot TransliterationSession::deleteForward()
     return publish(true);
 }
 
-Snapshot TransliterationSession::moveLeft()
+Snapshot TransliterationSession::setSelection(std::size_t location, std::size_t length)
 {
-    if (markedText_.empty() || cursor_ == 0) {
+    location = std::min(location, markedText_.size());
+    length = std::min(length, markedText_.size() - location);
+    if (cursor_ == location && selectionLength_ == length) {
         return publish(false);
     }
 
     copyMarkedTextToRawInput();
-    --cursor_;
+    cursor_ = location;
+    selectionLength_ = length;
     return publish(true);
+}
+
+Snapshot TransliterationSession::moveLeft()
+{
+    return setSelection(selectionLength_ > 0 || cursor_ == 0 ? cursor_ : cursor_ - 1);
 }
 
 Snapshot TransliterationSession::moveRight()
 {
-    if (markedText_.empty() || cursor_ >= markedText_.size()) {
-        return publish(false);
-    }
-
-    copyMarkedTextToRawInput();
-    ++cursor_;
-    return publish(true);
+    return setSelection(cursor_ + (selectionLength_ > 0 ? selectionLength_ : 1));
 }
 
 Snapshot TransliterationSession::moveHome()
 {
-    if (markedText_.empty() || cursor_ == 0) {
-        return publish(false);
-    }
-
-    copyMarkedTextToRawInput();
-    cursor_ = 0;
-    return publish(true);
+    return setSelection(0);
 }
 
 Snapshot TransliterationSession::moveEnd()
 {
-    if (markedText_.empty() || cursor_ >= markedText_.size()) {
-        return publish(false);
-    }
-
-    copyMarkedTextToRawInput();
-    cursor_ = markedText_.size();
-    return publish(true);
+    return setSelection(markedText_.size());
 }
 
 Snapshot TransliterationSession::commit()
@@ -508,6 +511,7 @@ Snapshot TransliterationSession::commit()
     rawInput_.clear();
     markedText_.clear();
     cursor_ = 0;
+    selectionLength_ = 0;
 
     return publish(true, std::move(committedText));
 }
@@ -521,6 +525,7 @@ Snapshot TransliterationSession::cancel()
     rawInput_.clear();
     markedText_.clear();
     cursor_ = 0;
+    selectionLength_ = 0;
 
     return publish(true);
 }
@@ -540,12 +545,25 @@ void TransliterationSession::copyMarkedTextToRawInput()
     rawInput_ = markedText_;
 }
 
+bool TransliterationSession::eraseSelection()
+{
+    if (selectionLength_ == 0) {
+        return false;
+    }
+
+    rawInput_.erase(cursor_, selectionLength_);
+    selectionLength_ = 0;
+    rebuildMarkedText();
+    return true;
+}
+
 Snapshot TransliterationSession::publish(bool changed, EngineString committedText)
 {
     snapshot_.rawInput = rawInput_;
     snapshot_.markedText = markedText_;
     snapshot_.committedText = std::move(committedText);
     snapshot_.cursor = std::min(cursor_, markedText_.size());
+    snapshot_.selectionLength = selectionLength_;
     snapshot_.isComposing = !markedText_.empty();
     snapshot_.changed = changed;
     return snapshot_;

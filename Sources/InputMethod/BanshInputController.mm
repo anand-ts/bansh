@@ -23,6 +23,13 @@ NSAttributedString* NSAttributedStringFromEngineString(std::u16string_view text)
     return [[NSAttributedString alloc] initWithString:NSStringFromEngineString(text)];
 }
 
+NSRange markedTextRangeForClient(id<IMKTextInput, NSObject> client)
+{
+    const NSRange range = [client markedRange];
+    return range.location != NSNotFound && range.length != NSNotFound && range.length > 0
+        ? range : NSMakeRange(NSNotFound, NSNotFound);
+}
+
 NSUInteger disallowedModifierFlags()
 {
     return NSEventModifierFlagCommand | NSEventModifierFlagControl | NSEventModifierFlagOption;
@@ -65,6 +72,7 @@ BOOL isControlSlashShortcut(NSString* string, NSInteger keyCode, NSUInteger flag
 - (NSRect)preferredCheatSheetFrameForClient:(id<IMKTextInput, NSObject>)client panelSize:(NSSize)panelSize;
 - (NSScreen*)screenForRect:(NSRect)rect fallback:(NSScreen*)fallback;
 - (void)toggleCheatSheetPanelForClient:(id<IMKTextInput, NSObject>)client;
+- (void)synchronizeSelectionForClient:(id<IMKTextInput, NSObject>)client;
 - (void)updateCompositionForClient:(id<IMKTextInput, NSObject>)client snapshot:(const Snapshot&)snapshot;
 
 @end
@@ -85,6 +93,8 @@ BOOL isControlSlashShortcut(NSString* string, NSInteger keyCode, NSUInteger flag
         return NO;
     }
 
+    [self synchronizeSelectionForClient:client];
+
     if (string.length == 1) {
         const char16_t scalar = static_cast<char16_t>([string characterAtIndex:0]);
 
@@ -99,6 +109,14 @@ BOOL isControlSlashShortcut(NSString* string, NSInteger keyCode, NSUInteger flag
         }
 
         if (scalar == u' ') {
+            return [self commitCompositionAndInsertText:string client:client];
+        }
+    }
+
+    if (current.isComposing && current.selectionLength > 0 && string.length > 0) {
+        const unichar firstCharacter = [string characterAtIndex:0];
+        const BOOL isFunctionKey = firstCharacter >= NSUpArrowFunctionKey && firstCharacter <= NSModeSwitchFunctionKey;
+        if (!isFunctionKey && ![NSCharacterSet.controlCharacterSet characterIsMember:firstCharacter]) {
             return [self commitCompositionAndInsertText:string client:client];
         }
     }
@@ -124,6 +142,8 @@ BOOL isControlSlashShortcut(NSString* string, NSInteger keyCode, NSUInteger flag
         [self hideCheatSheetPanel];
         return YES;
     }
+
+    [self synchronizeSelectionForClient:client];
 
     if (!current.isComposing) {
         return NO;
@@ -202,8 +222,8 @@ BOOL isControlSlashShortcut(NSString* string, NSInteger keyCode, NSUInteger flag
 
 - (NSRange)selectionRange
 {
-    const std::size_t cursor = session_.snapshot().cursor;
-    return NSMakeRange(cursor, 0);
+    const Snapshot& snapshot = session_.snapshot();
+    return NSMakeRange(snapshot.cursor, snapshot.selectionLength);
 }
 
 - (NSUInteger)recognizedEvents:(id)sender
@@ -236,8 +256,19 @@ BOOL isControlSlashShortcut(NSString* string, NSInteger keyCode, NSUInteger flag
         return;
     }
 
+    [self synchronizeSelectionForClient:client];
+    const Snapshot current = session_.snapshot();
+    const NSRange markedRange = markedTextRangeForClient(client);
     const Snapshot snapshot = session_.commit();
     [self applySnapshot:snapshot client:client];
+
+    if (markedRange.location != NSNotFound && current.cursor < current.markedText.size()) {
+        const NSRange caretRange = NSMakeRange(markedRange.location + current.cursor, 0);
+        // IMKTextInput has no selection setter. An empty marked update moves the caret;
+        // the following insertion ends that empty composition without changing the text.
+        [client setMarkedText:@"" selectionRange:NSMakeRange(0, 0) replacementRange:caretRange];
+        [client insertText:@"" replacementRange:caretRange];
+    }
 }
 
 - (BOOL)commitCompositionAndInsertText:(NSString*)text client:(id<IMKTextInput, NSObject>)client
@@ -249,6 +280,12 @@ BOOL isControlSlashShortcut(NSString* string, NSInteger keyCode, NSUInteger flag
 
     if (!session_.snapshot().isComposing) {
         return NO;
+    }
+
+    [self synchronizeSelectionForClient:client];
+    if (session_.snapshot().selectionLength > 0) {
+        const Snapshot snapshot = session_.backspace();
+        [self applySnapshot:snapshot client:client];
     }
 
     [self commitComposition:client];
@@ -404,6 +441,9 @@ BOOL isControlSlashShortcut(NSString* string, NSInteger keyCode, NSUInteger flag
     [background addSubview:scrollView];
 
     panel.contentView = background;
+    const CGFloat topOffset = MAX(0.0, NSHeight(mappingContent.bounds) - NSHeight(scrollView.contentView.bounds));
+    [scrollView.contentView scrollToPoint:NSMakePoint(0.0, topOffset)];
+    [scrollView reflectScrolledClipView:scrollView.contentView];
     return panel;
 }
 
@@ -488,7 +528,7 @@ BOOL isControlSlashShortcut(NSString* string, NSInteger keyCode, NSUInteger flag
 
 - (void)clearMarkedTextForClient:(id<IMKTextInput, NSObject>)client
 {
-    const NSRange markedRange = [client markedRange];
+    const NSRange markedRange = markedTextRangeForClient(client);
     if (markedRange.location != NSNotFound) {
         [client insertText:@"" replacementRange:markedRange];
     }
@@ -496,13 +536,32 @@ BOOL isControlSlashShortcut(NSString* string, NSInteger keyCode, NSUInteger flag
 
 - (NSRange)committedTextReplacementRangeForClient:(id<IMKTextInput, NSObject>)client
 {
-    const NSRange markedRange = [client markedRange];
-    return markedRange.location != NSNotFound ? markedRange : NSMakeRange(NSNotFound, NSNotFound);
+    return markedTextRangeForClient(client);
+}
+
+- (void)synchronizeSelectionForClient:(id<IMKTextInput, NSObject>)client
+{
+    const Snapshot& current = session_.snapshot();
+    if (!current.isComposing) {
+        return;
+    }
+
+    const NSRange markedRange = markedTextRangeForClient(client);
+    const NSRange selectedRange = [client selectedRange];
+    if (markedRange.location == NSNotFound || selectedRange.location == NSNotFound ||
+        markedRange.length != current.markedText.size() || selectedRange.location < markedRange.location) {
+        return;
+    }
+
+    const NSUInteger location = selectedRange.location - markedRange.location;
+    if (location <= markedRange.length && selectedRange.length <= markedRange.length - location) {
+        session_.setSelection(location, selectedRange.length);
+    }
 }
 
 - (void)updateCompositionForClient:(id<IMKTextInput, NSObject>)client snapshot:(const Snapshot&)snapshot
 {
-    const NSRange markedRange = [client markedRange];
+    const NSRange markedRange = markedTextRangeForClient(client);
     NSRange replacementRange = markedRange.location != NSNotFound ? markedRange : NSMakeRange(NSNotFound, NSNotFound);
 
     if (replacementRange.location == NSNotFound) {
@@ -513,8 +572,9 @@ BOOL isControlSlashShortcut(NSString* string, NSInteger keyCode, NSUInteger flag
     }
 
     const NSUInteger cursor = std::min<std::size_t>(snapshot.cursor, snapshot.markedText.size());
+    const NSUInteger selectionLength = std::min<std::size_t>(snapshot.selectionLength, snapshot.markedText.size() - cursor);
     [client setMarkedText:NSAttributedStringFromEngineString(snapshot.markedText)
-            selectionRange:NSMakeRange(cursor, 0)
+            selectionRange:NSMakeRange(cursor, selectionLength)
           replacementRange:replacementRange];
 }
 
