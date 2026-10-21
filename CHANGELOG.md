@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.1.5 — 2026-10-21
+
 - Respect caret moves and selections inside a composition, including separator insertion and commits at the composition length limit.
 - Preserve vowel harmony after cursor navigation through converted Cyrillic text.
 - Open the mapping reference at its first section.
